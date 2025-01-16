@@ -4,7 +4,7 @@
 #       Otherwise, only some of the are installed, because conda creates a temporary requirements.txt file
 #       only the last -pip section
 
-name: PROJECT_NAME
+name: nersemble_benchmark
 
 channels:
   - conda-forge
