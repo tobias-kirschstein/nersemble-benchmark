@@ -1,10 +1,12 @@
 import logging
+import os
 import urllib
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import Literal, Union, List
 from urllib.error import HTTPError, URLError
 
+import requests
 import tyro
 from elias.util import ensure_directory_exists_for_file
 from tqdm import tqdm
@@ -38,9 +40,15 @@ def download_file(url: str, target_path: str) -> None:
     ensure_directory_exists_for_file(target_path)
 
     if Path(target_path).exists():
-        # TODO(julieta) Local file could be corrupted or outdated, check hashes instead of just skipping.
-        logging.info("%s already exists, skipping", target_path)
-        return
+        response = requests.head(url)
+        download_size = int(response.headers['content-length'])
+        local_file_size = os.path.getsize(target_path)
+
+        if download_size == local_file_size:
+            print(f"{target_path} already exists, skipping")
+            return
+        else:
+            print(f"{target_path} seems to be incomplete. Re-downloading...")
 
     # percent_done = 100 * i / total
     # logging.info("[%.2f%%] Downloading link %d / %d from %s to %s", percent_done, i, total, from_url, to_path)
