@@ -85,7 +85,7 @@ intrinsics = camera_params.intrinsics  # <- 3x3 intrinsic matrix
 ```
 
 Furthermore, the [visualize_cameras.py](scripts/visualize/visualize_cameras.py) script shows the arrangement of the cameras in 3D. The hold-out cameras used for
-the hidden test set are shown in red.
+the hidden test set are shown in red. The `388` indicates the ID of the participant (see the data section for available participant IDs in the benchmark)
 
 ```shell
 python scripts/visualize/visualize_cameras.py ${benchmark_folder} 388
