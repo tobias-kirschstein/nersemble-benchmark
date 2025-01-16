@@ -1,3 +1,18 @@
+ASSETS = {
+    "nvs":
+        {
+            "global":
+                {
+                    "calibration": "{p_id:03d}/calibration/camera_params.json"
+                },
+            "per_cam":
+                {
+                    "images": "{p_id:03d}/sequences/{seq_name:}/images/cam_{serial:}.mp4",
+                    "alpha_maps": "{p_id:03d}/sequences/{seq_name:}/alpha_maps/cam_{serial:}.mp4",
+                }
+        }
+}
+
 SERIALS = ["222200042", "222200044", "222200046", "222200040", "222200036", "222200048", "220700191", "222200041",
            "222200037", "222200038", "222200047", "222200043", "222200049", "222200039", "222200045", "221501007"]
 

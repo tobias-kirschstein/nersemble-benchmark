@@ -11,3 +11,5 @@ with env.prefixed("NERSEMBLE_BENCHMARK_"):
     NERSEMBLE_BENCHMARK_URL = env("URL", f"<<<Define NERSEMBLE_BENCHMARK_URL in {env_file_path}>>>")
 
 NERSEMBLE_BENCHMARK_URL_NVS = f"{NERSEMBLE_BENCHMARK_URL}/nvs"
+
+REPO_ROOT = f"{Path(__file__).parent.resolve()}/../.."

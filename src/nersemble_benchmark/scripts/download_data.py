@@ -11,24 +11,9 @@ import tyro
 from elias.util import ensure_directory_exists_for_file
 from tqdm import tqdm
 
-from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCHMARK_NVS_HOLD_OUT_SERIALS, BENCHMARK_NVS_TRAIN_SERIALS
+from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCHMARK_NVS_HOLD_OUT_SERIALS, BENCHMARK_NVS_TRAIN_SERIALS, ASSETS
 
 from nersemble_benchmark.env import NERSEMBLE_BENCHMARK_URL_NVS, NERSEMBLE_BENCHMARK_URL
-
-ASSETS = {
-    "nvs":
-        {
-            "global":
-                {
-                    "calibration": "{p_id:03d}/calibration/camera_params.json"
-                },
-            "per_cam":
-                {
-                    "images": "{p_id:03d}/sequences/{seq_name:}/images/cam_{serial:}.mp4",
-                    "alpha_maps": "{p_id:03d}/sequences/{seq_name:}/alpha_maps/cam_{serial:}.mp4",
-                }
-        }
-}
 
 BenchmarkType = Literal["nvs", "mono-avatar"]
 AssetTypeNvs = Literal["calibration", "images", "alpha_maps"]
