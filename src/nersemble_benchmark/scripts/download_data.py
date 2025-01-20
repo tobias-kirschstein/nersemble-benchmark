@@ -5,6 +5,7 @@ from multiprocessing.pool import ThreadPool
 from pathlib import Path
 from typing import Literal, Union, List
 from urllib.error import HTTPError, URLError
+import hashlib
 
 import requests
 import tyro
@@ -14,6 +15,7 @@ from tqdm import tqdm
 from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCHMARK_NVS_HOLD_OUT_SERIALS, BENCHMARK_NVS_TRAIN_SERIALS, ASSETS
 
 from nersemble_benchmark.env import NERSEMBLE_BENCHMARK_URL_NVS, NERSEMBLE_BENCHMARK_URL
+from nersemble_benchmark.util.security import validate_nersemble_benchmark_url
 
 BenchmarkType = Literal["nvs", "mono-avatar"]
 AssetTypeNvs = Literal["calibration", "images", "alpha_maps"]
@@ -73,6 +75,8 @@ def main(
     participant_id:
         The benchmarks contain multiple participants. Select for which to download the data
     """
+
+    validate_nersemble_benchmark_url()
 
     benchmark_assets = ASSETS[benchmark_type]
     if assets == 'all':
