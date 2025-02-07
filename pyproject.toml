@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nersemble_benchmark"
-version = "0.0.3"
+version = "0.0.4"
 description = "Official devkit for the NeRSemble Photorealistic 3D Head Avatar Benchmark"
 authors = [
     { name = "Tobias Kirschstein", email = "tobias.kirschstein@gmail.com" },
@@ -23,7 +23,8 @@ dependencies = [
     "tyro",
     "environs",
     "elias",
-    "tqdm"
+    "tqdm",
+    "open3d"
 ]
 
 [project.optional-dependencies]
@@ -33,7 +34,6 @@ dev = [
 
 [project.scripts]
 nersemble-benchmark-download = "nersemble_benchmark.scripts.download_data:main_cli"
-# E.g., ns-download-data = "scripts.downloads.download_data:entrypoint"
 
 [tool.setuptools.packages.find]
 where = ["src"]

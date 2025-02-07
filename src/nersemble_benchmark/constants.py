@@ -9,8 +9,13 @@ ASSETS = {
                 {
                     "images": "{p_id:03d}/sequences/{seq_name:}/images/cam_{serial:}.mp4",
                     "alpha_maps": "{p_id:03d}/sequences/{seq_name:}/alpha_maps/cam_{serial:}.mp4",
+                },
+            "per_timestep":
+                {
+                    "pointclouds": "{p_id:03d}/sequences/{seq_name:}/pointclouds/frame_{timestep:05d}.pcd"
                 }
-        }
+        },
+    "mono-flame-avatar": {}
 }
 
 SERIALS = ["222200042", "222200044", "222200046", "222200040", "222200036", "222200048", "220700191", "222200041",

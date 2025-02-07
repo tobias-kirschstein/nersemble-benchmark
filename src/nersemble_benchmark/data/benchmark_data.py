@@ -6,6 +6,7 @@ from dreifus.camera import CameraCoordinateConvention, PoseType
 from dreifus.matrix import Pose, Intrinsics
 from elias.config import Config
 from elias.util import load_json
+import open3d as o3d
 
 from nersemble_benchmark.constants import ASSETS, BENCHMARK_NVS_TRAIN_SERIALS
 from nersemble_benchmark.util.video import VideoFrameLoader
@@ -64,6 +65,13 @@ class NVSDataManager:
 
         return image
 
+    def load_pointcloud(self, sequence_name: str, timestep: int):
+        pcd = o3d.io.read_point_cloud(self.get_pointcloud_path(sequence_name, timestep))
+        points = np.asarray(pcd.points, dtype=np.float32)
+        colors = np.asarray(pcd.colors, dtype=np.float32)
+        normals = np.asarray(pcd.normals, dtype=np.float32)
+        return points, colors, normals
+
     # ----------------------------------------------------------
     # Paths
     # ----------------------------------------------------------
@@ -78,4 +86,8 @@ class NVSDataManager:
 
     def get_alpha_maps_path(self, sequence_name: str, serial: str) -> str:
         relative_path = ASSETS['nvs']['per_cam']['alpha_maps'].format(p_id=self._participant_id, seq_name=sequence_name, serial=serial)
+        return f"{self._location}/{relative_path}"
+
+    def get_pointcloud_path(self, sequence_name: str, timestep: int) -> str:
+        relative_path = ASSETS['nvs']['per_timestep']['pointclouds'].format(p_id=self._participant_id, seq_name=sequence_name, timestep=timestep)
         return f"{self._location}/{relative_path}"

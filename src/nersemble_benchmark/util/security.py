@@ -1,6 +1,8 @@
 import hashlib
 from pathlib import Path
 
+from elias.util import ensure_directory_exists_for_file
+
 from nersemble_benchmark.constants import NERSEMBLE_ACCESS_FORM_URL
 from nersemble_benchmark.env import NERSEMBLE_BENCHMARK_URL, env, env_file_path
 
@@ -16,6 +18,7 @@ def _prompt_nersemble_benchmark_url():
     env_dict["NERSEMBLE_BENCHMARK_URL"] = nersemble_benchmark_url
     global NERSEMBLE_BENCHMARK_URL
     NERSEMBLE_BENCHMARK_URL = nersemble_benchmark_url
+    ensure_directory_exists_for_file(env_file_path)
     for key, value in env_dict.items():
         with open(env_file_path, "w+") as f:
             f.write(f"{key}=\"{value}\"\n")

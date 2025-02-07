@@ -28,20 +28,25 @@ In the following, `${benchmark_folder}` denotes the path to your local folder wh
 
 #### NVS Benchmark
 
-| Participant ID | Sequence       | #Frames  | Size        |
-|----------------|----------------|----------|-------------|
-| 388            | GLASSES        | 1118     | 1.06 GB     |
-| 422            | EXP-2-eyes     | 517      | 386 MB      |
-| 443            | FREE           | 1108     | 1.19 GB     |
-| 445            | EXP-6-tongue-1 | 514      | 401 MB      |
-| 475            | HAIR           | 259      | 325 MB      |
-|                |                | Σ = 3516 | Σ = 3.34 GB |
+| Participant ID | Sequence       | #Frames  | Size        | Size (incl. pointclouds) |
+|----------------|----------------|----------|-------------|--------------------------|
+| 388            | GLASSES        | 1118     | 1.06 GB     | 21.8 GB                  |
+| 422            | EXP-2-eyes     | 517      | 386 MB      | 16.1 GB                  |
+| 443            | FREE           | 1108     | 1.19 GB     | 17.3 GB                  |
+| 445            | EXP-6-tongue-1 | 514      | 401 MB      | 13.4 GB                  |
+| 475            | HAIR           | 259      | 325 MB      | 773 MB                   |
+|                |                | Σ = 3516 | Σ = 3.34 GB | Σ = 69.6 GB              |
 
 ### NVS Benchmark download
 
 ```shell
 nersemble-benchmark-download ${benchmark_folder} nvs 
 ```
+
+#### NVS pointclouds
+The NVS benchmark also comes with pointclouds for each timestep that can be used to solve the task. 
+Due to their size, per default only the first pointcloud of each sequence is downloaded which can be helpful to initialize 3D Gaussians for example.
+To download the pointclouds for all frames of the benchmark sequences, use `--pointcloud_frames all`. The pointclouds contain 3D point positions, colors, and normals.
 
 ## 3. Usage
 
@@ -56,6 +61,7 @@ from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCH
 benchmark_folder = "path/to/local/benchmark/folder"
 participant_id, sequence_name = BENCHMARK_NVS_IDS_AND_SEQUENCES[0]  # <- Use first benchmark subject
 serial = BENCHMARK_NVS_TRAIN_SERIALS[0]  # <- Use first train camera
+timestep = 0  # <- Use first timestep
 
 data_manager = NVSDataManager(benchmark_folder, participant_id)
 ```
@@ -63,7 +69,7 @@ data_manager = NVSDataManager(benchmark_folder, participant_id)
 #### Load image
 
 ```python
-image = data_manager.load_image(sequence_name, serial, 0, apply_alpha_map=True)  # <- Load first frame and remove background
+image = data_manager.load_image(sequence_name, serial, timestep, apply_alpha_map=True)  # <- Load first frame and remove background
 ```
 
 ![static/images/example_image.jpg](static/images/example_image.jpg)
@@ -71,16 +77,24 @@ image = data_manager.load_image(sequence_name, serial, 0, apply_alpha_map=True) 
 #### Load Alpha Map
 
 ```python
-image = data_manager.load_alpha_map(sequence_name, serial, 0)  # <- Load alpha map
+image = data_manager.load_alpha_map(sequence_name, serial, timestep)  # <- Load alpha map
 ```
 
 ![static/images/example_alpha_map.jpg](static/images/example_alpha_map.jpg)
+
+#### Load Pointcloud
+
+```python
+points, colors, normals = data_manager.load_pointcloud(sequence_name, timestep)  # <- Load pointcloud of first timestep
+```
+
+![static/images/example_pointcloud.jpg](static/images/example_pointcloud.jpg)
 
 #### Load cameras
 
 ```python
 camera_params = data_manager.load_camera_calibration()
-world_2_cam_pose = camera_params.world_2_cam[serial]  # <- 4x4 extrinsic matrix in OpenCV camera coordinate convention
+world_2_cam_pose = camera_params.world_2_cam[serial]  # <- 4x4 world2cam extrinsic matrix in OpenCV camera coordinate convention
 intrinsics = camera_params.intrinsics  # <- 3x3 intrinsic matrix
 ```
 
