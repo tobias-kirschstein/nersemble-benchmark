@@ -7,10 +7,10 @@ import requests
 from elias.util import ensure_directory_exists_for_file
 
 
-def download_file(url: str, target_path: str) -> None:
+def download_file(url: str, target_path: str, overwrite: bool = False) -> None:
     ensure_directory_exists_for_file(target_path)
 
-    if Path(target_path).exists():
+    if not overwrite and Path(target_path).exists():
         response = requests.head(url)
         download_size = int(response.headers['content-length'])
         local_file_size = os.path.getsize(target_path)

@@ -22,13 +22,15 @@ def main(benchmark_folder: str, participant_id: int, /, timestep: int = 0):
     for serial in BENCHMARK_NVS_TRAIN_SERIALS:
         image = images[serial]
         world_2_cam_pose = camera_params.world_2_cam[serial]
+        intr = camera_params.intrinsics[serial]
 
-        add_camera_frustum(p, world_2_cam_pose, camera_params.intrinsics, image=image)
+        add_camera_frustum(p, world_2_cam_pose, intr, image=image)
 
     # Visualize hold-out serials
     for serial in BENCHMARK_NVS_HOLD_OUT_SERIALS:
         world_2_cam_pose = camera_params.world_2_cam[serial]
-        add_camera_frustum(p, world_2_cam_pose, camera_params.intrinsics, color='red')
+        intr = camera_params.intrinsics[serial]
+        add_camera_frustum(p, world_2_cam_pose, intr, color='red')
 
     if has_pointcloud:
         points, colors, normals = data_manager.load_pointcloud(sequence_name, timestep)

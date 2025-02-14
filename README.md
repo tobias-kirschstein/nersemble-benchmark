@@ -95,7 +95,7 @@ points, colors, normals = data_manager.load_pointcloud(sequence_name, timestep) 
 ```python
 camera_params = data_manager.load_camera_calibration()
 world_2_cam_pose = camera_params.world_2_cam[serial]  # <- 4x4 world2cam extrinsic matrix in OpenCV camera coordinate convention
-intrinsics = camera_params.intrinsics  # <- 3x3 intrinsic matrix
+intrinsics = camera_params.intrinsics[serial]  # <- 3x3 intrinsic matrix
 ```
 
 Furthermore, the [visualize_cameras.py](scripts/visualize/visualize_cameras.py) script shows the arrangement of the cameras in 3D. The hold-out cameras used for

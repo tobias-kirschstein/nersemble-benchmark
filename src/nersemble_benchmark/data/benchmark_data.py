@@ -15,7 +15,7 @@ from nersemble_benchmark.util.video import VideoFrameLoader
 @dataclass
 class CameraParams(Config):
     world_2_cam: Dict[str, Pose]
-    intrinsics: Intrinsics
+    intrinsics: Dict[str, Intrinsics]
 
 
 class NVSDataManager:
@@ -32,7 +32,7 @@ class NVSDataManager:
         world_2_cam = camera_params['world_2_cam']
         world_2_cam = {serial: Pose(pose, camera_coordinate_convention=CameraCoordinateConvention.OPEN_CV, pose_type=PoseType.WORLD_2_CAM)
                        for serial, pose in world_2_cam.items()}
-        intrinsics = Intrinsics(camera_params['intrinsics'])
+        intrinsics = {serial: Intrinsics(intr) for serial, intr in camera_params['intrinsics'].items()}
         camera_params = CameraParams(world_2_cam, intrinsics)
         return camera_params
 
@@ -77,7 +77,7 @@ class NVSDataManager:
     # ----------------------------------------------------------
 
     def get_camera_calibration_path(self) -> str:
-        relative_path = ASSETS['nvs']['global']['calibration'].format(p_id=self._participant_id)
+        relative_path = ASSETS['nvs']['per_person']['calibration'].format(p_id=self._participant_id)
         return f"{self._location}/{relative_path}"
 
     def get_images_path(self, sequence_name: str, serial: str) -> str:
