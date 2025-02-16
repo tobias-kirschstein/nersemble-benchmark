@@ -18,9 +18,10 @@ class CameraParams(Config):
     intrinsics: Dict[str, Intrinsics]
 
 
-class NVSDataManager:
-    def __init__(self, benchmark_folder: str, participant_id: int):
-        self._location = f"{benchmark_folder}/nvs"
+class BaseDataManager:
+    def __init__(self, benchmark_folder: str, benchmark_type: str, participant_id: int):
+        self._location = f"{benchmark_folder}/{benchmark_type}"
+        self._benchmark_type = benchmark_type
         self._participant_id = participant_id
 
     # ----------------------------------------------------------
@@ -65,6 +66,31 @@ class NVSDataManager:
 
         return image
 
+    # ----------------------------------------------------------
+    # Paths
+    # ----------------------------------------------------------
+
+    def get_camera_calibration_path(self) -> str:
+        relative_path = ASSETS[self._benchmark_type]['per_person']['calibration'].format(p_id=self._participant_id)
+        return f"{self._location}/{relative_path}"
+
+    def get_images_path(self, sequence_name: str, serial: str) -> str:
+        relative_path = ASSETS[self._benchmark_type]['per_cam']['images'].format(p_id=self._participant_id, seq_name=sequence_name, serial=serial)
+        return f"{self._location}/{relative_path}"
+
+    def get_alpha_maps_path(self, sequence_name: str, serial: str) -> str:
+        relative_path = ASSETS[self._benchmark_type]['per_cam']['alpha_maps'].format(p_id=self._participant_id, seq_name=sequence_name, serial=serial)
+        return f"{self._location}/{relative_path}"
+
+
+class NVSDataManager(BaseDataManager):
+    def __init__(self, benchmark_folder: str, participant_id: int):
+        super().__init__(benchmark_folder, "nvs", participant_id)
+
+    # ----------------------------------------------------------
+    # Assets
+    # ----------------------------------------------------------
+
     def load_pointcloud(self, sequence_name: str, timestep: int):
         pcd = o3d.io.read_point_cloud(self.get_pointcloud_path(sequence_name, timestep))
         points = np.asarray(pcd.points, dtype=np.float32)
@@ -76,18 +102,48 @@ class NVSDataManager:
     # Paths
     # ----------------------------------------------------------
 
-    def get_camera_calibration_path(self) -> str:
-        relative_path = ASSETS['nvs']['per_person']['calibration'].format(p_id=self._participant_id)
-        return f"{self._location}/{relative_path}"
-
-    def get_images_path(self, sequence_name: str, serial: str) -> str:
-        relative_path = ASSETS['nvs']['per_cam']['images'].format(p_id=self._participant_id, seq_name=sequence_name, serial=serial)
-        return f"{self._location}/{relative_path}"
-
-    def get_alpha_maps_path(self, sequence_name: str, serial: str) -> str:
-        relative_path = ASSETS['nvs']['per_cam']['alpha_maps'].format(p_id=self._participant_id, seq_name=sequence_name, serial=serial)
-        return f"{self._location}/{relative_path}"
-
     def get_pointcloud_path(self, sequence_name: str, timestep: int) -> str:
-        relative_path = ASSETS['nvs']['per_timestep']['pointclouds'].format(p_id=self._participant_id, seq_name=sequence_name, timestep=timestep)
+        relative_path = ASSETS[self._benchmark_type]['per_timestep']['pointclouds'].format(p_id=self._participant_id, seq_name=sequence_name, timestep=timestep)
         return f"{self._location}/{relative_path}"
+
+
+@dataclass
+class FlameTracking:
+    # @formatter:off
+    shape: np.ndarray               # (1, 300)
+    expression: np.ndarray          # (T, 100)
+    rotation: np.ndarray            # (T, 3)
+    rotation_matrices: np.ndarray   # (T, 3, 3)
+    translation: np.ndarray         # (T, 3)
+    jaw: np.ndarray                 # (T, 3)
+    frames: np.ndarray              # (T,)
+    scale: np.ndarray               # (1, 1)
+    neck: np.ndarray                # (T, 3)
+    eyes: np.ndarray                # (T, 6)
+    # @formatter:on
+
+
+class MonoFlameAvatarDataManager(BaseDataManager):
+    def __init__(self, benchmark_folder: str, participant_id: int):
+        super().__init__(benchmark_folder, "mono_flame_avatar", participant_id)
+
+    def load_flame_tracking(self, sequence_name: str) -> FlameTracking:
+        flame_tracking = np.load(self.get_flame_tracking_path(sequence_name))
+        flame_tracking = FlameTracking(**flame_tracking)
+        return flame_tracking
+
+    # ----------------------------------------------------------
+    # Paths
+    # ----------------------------------------------------------
+
+    def get_flame_tracking_path(self, sequence_name: str) -> str:
+        relative_path = ASSETS[self._benchmark_type]['per_sequence']['flame2023_tracking'].format(p_id=self._participant_id, seq_name=sequence_name)
+        return f"{self._location}/{relative_path}"
+
+
+if __name__ == '__main__':
+    data_manager = MonoFlameAvatarDataManager("D:/Projects/3D_Face_Scanning_Rig/data/benchmark_data", 393)
+    flame_tracking = data_manager.load_flame_tracking("EMO-1-shout+laugh")
+    print('hi')
+
+    # TODO: CONTINUE, DOUBLE CHECK THAT FLAME CAN BE LOADED

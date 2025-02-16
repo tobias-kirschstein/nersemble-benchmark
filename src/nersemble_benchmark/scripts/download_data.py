@@ -17,10 +17,10 @@ from nersemble_benchmark.util.metadata import NVSMetadata
 from nersemble_benchmark.util.security import validate_nersemble_benchmark_url
 
 BenchmarkType = Literal["nvs", "mono_flame_avatar"]
-AssetTypeNvs = Literal["calibration", "images", "alpha_maps", "pointclouds"]
-AssetTypeMonoAvatar = Literal['']
-# AssetType = Union[AssetTypeNvs, AssetTypeMonoAvatar]
-AssetType = AssetTypeNvs
+AssetType = Literal[
+    "calibration", "images", "alpha_maps", "pointclouds",  # NVS
+    "flame2023_tracking",  # Mono Flame Avatar
+]
 AssetsType = Union[Literal['all'], List[AssetType]]
 
 
