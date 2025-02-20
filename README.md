@@ -26,7 +26,7 @@ In the following, `${benchmark_folder}` denotes the path to your local folder wh
 
 ### Overview
 
-#### NVS Benchmark
+#### NVS Benchmark (1604 x 1100)
 
 | Participant ID | Sequence       | #Frames  | Size        | Size (incl. pointclouds) |
 |----------------|----------------|----------|-------------|--------------------------|
@@ -36,6 +36,16 @@ In the following, `${benchmark_folder}` denotes the path to your local folder wh
 | 445            | EXP-6-tongue-1 | 514      | 401 MB      | 13.4 GB                  |
 | 475            | HAIR           | 259      | 325 MB      | 773 MB                   |
 |                |                | Σ = 3516 | Σ = 3.34 GB | Σ = 69.6 GB              |
+
+#### Mono FLAME Avatar Benchmark (512 x 512)
+| Participant ID | #Sequences (train / test) | #Frames (train / test) | Size       | 
+|----------------|---------------------------|------------------------|------------|
+| 393            | 18 / 4                    |                        | 27 MB      | 
+| 404            | 18 / 4                    |                        | 28 MB      | 
+| 461            | 18 / 4                    |                        | 29 MB      | 
+| 477            | 18 / 4                    |                        | 37 MB      | 
+| 486            | 18 / 4                    |                        | 23 MB      |
+|                |                           |                        | Σ = 144 MB |
 
 ### NVS Benchmark download
 
@@ -50,9 +60,14 @@ To download the pointclouds for all frames of the benchmark sequences, use `--po
 
 ### Mono FLAME Avatar Benchmark download
 
-```shell
+```bash
 nersemble-benchmark-download ${benchmark_folder} mono_flame_avatar 
 ```
+
+#### FLAME tracking
+
+The Mono FLAME Avatar benchmark comes with FLAME tracking for each timesteps of both the train sequences as well as the hold-out sequences.  
+These are downloaded per default, but can also be specifically targeted for download via `--assets flame2023_tracking`.
 
 ## 3. Usage
 
@@ -78,7 +93,7 @@ data_manager = NVSDataManager(benchmark_folder, participant_id)
 image = data_manager.load_image(sequence_name, serial, timestep, apply_alpha_map=True)  # <- Load first frame and remove background
 ```
 
-![static/images/example_image.jpg](static/images/example_image.jpg)
+<img src="static/images/example_image.jpg" width="150px" alt="Loaded example image"/>
 
 #### Load Alpha Map
 
@@ -86,15 +101,7 @@ image = data_manager.load_image(sequence_name, serial, timestep, apply_alpha_map
 image = data_manager.load_alpha_map(sequence_name, serial, timestep)  # <- Load alpha map
 ```
 
-![static/images/example_alpha_map.jpg](static/images/example_alpha_map.jpg)
-
-#### Load Pointcloud
-
-```python
-points, colors, normals = data_manager.load_pointcloud(sequence_name, timestep)  # <- Load pointcloud of first timestep
-```
-
-![static/images/example_pointcloud.jpg](static/images/example_pointcloud.jpg)
+<img src="static/images/example_alpha_map.jpg" width="150px" alt="Loaded example alpha map"/>
 
 #### Load cameras
 
@@ -111,7 +118,66 @@ the hidden test set are shown in red. The `388` indicates the ID of the particip
 python scripts/visualize/visualize_cameras.py ${benchmark_folder} 388
 ```
 
-![static/images/example_cameras.jpg](static/images/example_cameras.jpg)
+<img src="static/images/example_cameras.jpg" width="300px" alt="Loaded example cameras"/>
+
+### NVS Data Manager assets
+The dynamic NVS benchmark has some assets specific to the benchmark. The following code assumes the use of a `NVSDataManager`:
+```python
+from nersemble_benchmark.data.benchmark_data import NVSDataManager
+nvs_data_manager = NVSDataManager(benchmark_folder, participant_id)
+```
+
+#### Load Pointcloud
+
+```python
+points, colors, normals = nvs_data_manager.load_pointcloud(sequence_name, timestep)  # <- Load pointcloud of some timestep
+```
+<img src="static/images/example_pointcloud.jpg" width="150px" alt="Loaded example pointcloud"/>
+
+### Mono FLAME Avatar assets
+The Mono FLAME Avatar benchmark has some additional assets specific to the benchmark. The following code assumes the use of a `MonoFlameAvatarDataManager`:
+```python
+from nersemble_benchmark.data.benchmark_data import MonoFlameAvatarDataManager
+mono_flame_data_manager = MonoFlameAvatarDataManager(benchmark_folder, participant_id)
+```
+
+#### FLAME tracking
+
+The FLAME tracking for the benchmark has been conducted with the FLAME 2023 model.  
+The tracking result can be loaded via: 
+
+```python
+flame_tracking = mono_flame_data_manager.load_flame_tracking(sequence_name)  # <- Load the FLAME tracking for an entire sequence  
+```
+
+it contains shape and expression codes, jaw and eyes parameters, as well as rigid head rotation and translation in world space:
+```python
+class FlameTracking:
+    shape               # (1, 300)
+    expression          # (T, 100)
+    rotation            # (T, 3)
+    rotation_matrices   # (T, 3, 3)
+    translation         # (T, 3)
+    jaw                 # (T, 3)
+    frames              # (T,)
+    scale               # (1, 1)
+    neck                # (T, 3)
+    eyes                # (T, 6)
+```
+
+The FLAME tracking will provide a FLAME mesh that is already perfectly aligned with the given cameras from the benchmark.  
+The easiest way to obtain the mesh from the tracking parameters is using the `FlameProvider` class:
+```python
+from nersemble_benchmark.models.flame import FlameProvider
+
+flame_provider = FlameProvider(flame_tracking)
+mesh = flame_provider.get_mesh(timestep)  # <- Get tracked mesh for the specified timestep in the sequence
+```
+The [visualize_flame_tracking.py](scripts/visualize/visualize_flame_tracking.py) script shows how to load the FLAME tracking and visualizes the corresponding FLAME mesh with the correct cameras:
+```shell
+python scripts/visualize/visualize_flame_tracking.py ${benchmark_folder} --participant_id 461
+```
+<img src="static/images/example_flame_tracking.jpg" width="300px" alt="FLAME Tracking example"/>
 
 ## 4. Submission
 

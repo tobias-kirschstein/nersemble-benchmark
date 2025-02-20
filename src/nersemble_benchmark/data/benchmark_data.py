@@ -120,7 +120,12 @@ class BaseDataManager:
         return images
 
     def has_sequence(self, sequence_name: str) -> bool:
-        video_path = self.get_images_path(sequence_name, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL)
+        serial = self.list_serials(sequence_name)[0]
+        video_path = self.get_images_path(sequence_name, serial)
+        return Path(video_path).exists()
+
+    def has_video(self, sequence_name: str, serial: str) -> bool:
+        video_path = self.get_images_path(sequence_name, serial)
         return Path(video_path).exists()
 
     # ----------------------------------------------------------
