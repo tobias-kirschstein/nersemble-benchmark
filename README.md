@@ -48,6 +48,12 @@ The NVS benchmark also comes with pointclouds for each timestep that can be used
 Due to their size, per default only the first pointcloud of each sequence is downloaded which can be helpful to initialize 3D Gaussians for example.
 To download the pointclouds for all frames of the benchmark sequences, use `--pointcloud_frames all`. The pointclouds contain 3D point positions, colors, and normals.
 
+### Mono FLAME Avatar Benchmark download
+
+```shell
+nersemble-benchmark-download ${benchmark_folder} mono_flame_avatar 
+```
+
 ## 3. Usage
 
 ### Data Managers
