@@ -37,6 +37,8 @@ In the following, `${benchmark_folder}` denotes the path to your local folder wh
 | 475            | HAIR           | 259      | 325 MB      | 773 MB                   |
 |                |                | Σ = 3516 | Σ = 3.34 GB | Σ = 69.6 GB              |
 
+13 out of the available 16 cameras are provided for training, the remaining 3 cameras (`222200046`, `222200037`, `222200039`) are hold-out and used to compute the test metrics.
+
 #### Mono FLAME Avatar Benchmark (512 x 512)
 | Participant ID | #Sequences (train / test) | #Frames (train / test) | Size       | 
 |----------------|---------------------------|------------------------|------------|
@@ -46,6 +48,11 @@ In the following, `${benchmark_folder}` denotes the path to your local folder wh
 | 477            | 18 / 4                    | 2,543 / 530            | 37 MB      | 
 | 486            | 18 / 4                    | 2,440 / 608            | 23 MB      |
 |                |                           | 12,013 / 3,105         | Σ = 144 MB |
+
+Only a single camera is provided for training: `222200037`.
+For all participants, the same 4 sequences are held out: `EMO-1-shout+laugh`, `FREE`, `SEN-09-frown_events_bad`, and `SEN-10-port_strong_smokey`.
+To compute test metrics, both the training camera as well as 3 hold-out cameras (`222200046`, `220700191`, `222200039`) are used to compute the test metrics.
+
 
 ### NVS Benchmark download
 
