@@ -106,3 +106,52 @@ python scripts/visualize/visualize_cameras.py ${benchmark_folder} 388
 ```
 
 ![static/images/example_cameras.jpg](static/images/example_cameras.jpg)
+
+## 4. Submission
+
+### 4.1. NVS Benchmark
+
+#### Submission .zip creation
+
+For each of the 5 benchmark sequences, you need to render the whole sequence from the three hold-out cameras (222200046, 222200037, 222200039).  
+The corresponding camera extrinsics and intrinsics can be loaded the same way as the train cameras:
+```python
+from nersemble_benchmark.constants import BENCHMARK_NVS_HOLD_OUT_SERIALS
+
+camera_params = data_manager.load_camera_calibration()
+for serial in BENCHMARK_NVS_HOLD_OUT_SERIALS:
+    world_2_cam_pose = camera_params.world_2_cam[serial]
+    intrinsics = camera_params.intrinsics[serial]
+    ...  #  <- Render video from your reconstructed 4D representation
+```
+
+Once you obtained the images from the hold out viewpoints for all frames of the 5 benchmark sequences, you can pack them into a `.zip` file for submission.  
+The expected structure of the `.zip` file is as follows:
+```yaml
+nvs_submission.zip
+├── 388
+│   └── GLASSES
+│       ├── cam_222200037.mp4  # <- Video predictions from your method
+│       ├── cam_222200039.mp4
+│       └── cam_222200046.mp4
+├── 422
+│   └── EXP-2-eyes
+│       ├── cam_222200037.mp4
+│       ├── cam_222200039.mp4
+│       └── cam_222200046.mp4
+┆
+└── 475
+    └── ...
+```
+Since `.mp4` is a lossy compression format, we use a very high quality setting of `--crf 14` to ensure the metric calculation is not affected by compression artifacts. 
+
+To facilitate the creation of the submission .zip, this repository also contains some Python helpers that you can use:
+```python
+from nersemble_benchmark.data.submission_data import NVSSubmissionDataWriter
+
+zip_path = ...  #  <- Local path where you want to create your submission .zip file
+images = ...  # <-  List of uint8 numpy arrays (H, W, 3) in range 0-255 that hold the image data for all frames of a single camera
+
+submission_data_manager = NVSSubmissionDataWriter(zip_path)
+submission_data_manager.add_video(participant, sequence_name, serial, images)  #  <- will automatically package the images into a .mp4 file and place it correctly into the .zip
+```

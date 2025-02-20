@@ -9,18 +9,18 @@ from torch._C import BenchmarkConfig
 from tqdm import tqdm
 
 from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCHMARK_NVS_TRAIN_SERIALS, ASSETS, BENCHMARK_MONO_FLAME_AVATAR_IDS, \
-    BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TRAIN, BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST, BENCHMARK_MONO_AVATAR_TRAIN_SERIAL, \
-    BENCHMARK_MONO_AVATAR_HOLD_OUT_SERIALS
+    BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TRAIN, BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL, \
+    BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS
 from nersemble_benchmark.env import NERSEMBLE_BENCHMARK_URL_NVS, NERSEMBLE_BENCHMARK_URL
 from nersemble_benchmark.util.download import download_file
 from nersemble_benchmark.util.metadata import NVSMetadata
 from nersemble_benchmark.util.security import validate_nersemble_benchmark_url
 
 BenchmarkType = Literal["nvs", "mono_flame_avatar"]
-AssetTypeNvs = Literal["calibration", "images", "alpha_maps", "pointclouds"]
-AssetTypeMonoAvatar = Literal['']
-# AssetType = Union[AssetTypeNvs, AssetTypeMonoAvatar]
-AssetType = AssetTypeNvs
+AssetType = Literal[
+    "calibration", "images", "alpha_maps", "pointclouds",  # NVS
+    "flame2023_tracking",  # Mono Flame Avatar
+]
 AssetsType = Union[Literal['all'], List[AssetType]]
 
 
@@ -86,14 +86,14 @@ def main(
 
         sequences = BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TRAIN
         timesteps = None
-        benchmark_ids_sequences_and_timesteps = [(p_id, seq_name, [BENCHMARK_MONO_AVATAR_TRAIN_SERIAL], timesteps) for p_id in participant_ids for seq_name in sequences]
+        benchmark_ids_sequences_and_timesteps = [(p_id, seq_name, [BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL], timesteps) for p_id in participant_ids for seq_name in sequences]
 
         relative_urls = collect_relative_urls(benchmark_type, benchmark_ids_sequences_and_timesteps, assets)
         download_urls(benchmark_folder, benchmark_type, relative_urls, overwrite=overwrite, n_workers=n_workers)
 
         # Test inputs for hold-out sequences
         sequences = BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST
-        benchmark_ids_sequences_and_timesteps = [(p_id, seq_name, BENCHMARK_MONO_AVATAR_HOLD_OUT_SERIALS, timesteps) for p_id in participant_ids for seq_name in sequences]
+        benchmark_ids_sequences_and_timesteps = [(p_id, seq_name, BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS, timesteps) for p_id in participant_ids for seq_name in sequences]
         assets_test = [asset for asset in assets if asset in ASSETS[benchmark_type]['test_assets']]
 
         relative_urls = collect_relative_urls(benchmark_type, benchmark_ids_sequences_and_timesteps, assets_test)
