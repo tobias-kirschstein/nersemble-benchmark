@@ -113,7 +113,7 @@ python scripts/visualize/visualize_cameras.py ${benchmark_folder} 388
 
 #### Submission .zip creation
 
-For each of the 5 benchmark sequences, you need to render the whole sequence from the three hold-out cameras (222200046, 222200037, 222200039).  
+For each of the 5 benchmark sequences, you need to render the whole sequence from the three hold-out cameras (`222200046`, `222200037`, `222200039`).  
 The corresponding camera extrinsics and intrinsics can be loaded the same way as the train cameras:
 ```python
 from nersemble_benchmark.constants import BENCHMARK_NVS_HOLD_OUT_SERIALS
