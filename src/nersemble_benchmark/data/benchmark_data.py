@@ -11,7 +11,7 @@ from elias.config import Config
 from elias.util import load_json
 from tqdm.contrib.concurrent import thread_map
 
-from nersemble_benchmark.constants import ASSETS, BENCHMARK_NVS_TRAIN_SERIALS, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL
+from nersemble_benchmark.constants import ASSETS, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL
 from nersemble_benchmark.util.video import VideoFrameLoader
 
 
