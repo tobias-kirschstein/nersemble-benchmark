@@ -227,3 +227,4 @@ images = ...  # <-  List of uint8 numpy arrays (H, W, 3) in range 0-255 that hol
 submission_data_manager = NVSSubmissionDataWriter(zip_path)
 submission_data_manager.add_video(participant, sequence_name, serial, images)  #  <- will automatically package the images into a .mp4 file and place it correctly into the .zip
 ```
+Note that the `NVSSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.
