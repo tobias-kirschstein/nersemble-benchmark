@@ -40,12 +40,12 @@ In the following, `${benchmark_folder}` denotes the path to your local folder wh
 #### Mono FLAME Avatar Benchmark (512 x 512)
 | Participant ID | #Sequences (train / test) | #Frames (train / test) | Size       | 
 |----------------|---------------------------|------------------------|------------|
-| 393            | 18 / 4                    |                        | 27 MB      | 
-| 404            | 18 / 4                    |                        | 28 MB      | 
-| 461            | 18 / 4                    |                        | 29 MB      | 
-| 477            | 18 / 4                    |                        | 37 MB      | 
-| 486            | 18 / 4                    |                        | 23 MB      |
-|                |                           |                        | Σ = 144 MB |
+| 393            | 18 / 4                    | 2,964 / 816            | 27 MB      | 
+| 404            | 18 / 4                    | 2,009 / 665            | 28 MB      | 
+| 461            | 18 / 4                    | 2,057 / 486            | 29 MB      | 
+| 477            | 18 / 4                    | 2,543 / 530            | 37 MB      | 
+| 486            | 18 / 4                    | 2,440 / 608            | 23 MB      |
+|                |                           | 12,013 / 3,105         | Σ = 144 MB |
 
 ### NVS Benchmark download
 

@@ -6,7 +6,9 @@ import numpy as np
 from dreifus.pyvista import add_camera_frustum, add_coordinate_axes
 from dreifus.render import project, draw_onto_image
 
-from nersemble_benchmark.constants import BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL, BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS
+from nersemble_benchmark.constants import BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL, BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS, \
+    BENCHMARK_MONO_FLAME_AVATAR_IDS, BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES, BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TRAIN, \
+    BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST
 from nersemble_benchmark.data.benchmark_data import MonoFlameAvatarDataManager
 from nersemble_benchmark.models.flame import FlameProvider
 
@@ -54,3 +56,30 @@ class MonoAvatarTest(TestCase):
 
         add_coordinate_axes(p, scale=0.1)
         p.show()
+
+    def test_list_sequence_lengths(self):
+        benchmark_folder = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1"
+        benchmark_folder_hold_out = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_hold_out"
+
+        all_total_frames = 0
+        all_total_frames_hold_out = 0
+
+        for participant_id in BENCHMARK_MONO_FLAME_AVATAR_IDS:
+            data_manager = MonoFlameAvatarDataManager(benchmark_folder, participant_id)
+            n_total_frames = 0
+            for sequence_name in BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TRAIN:
+                n_frames = data_manager.get_n_timesteps(sequence_name)
+                n_total_frames += n_frames
+
+            data_manager_hold_out = MonoFlameAvatarDataManager(benchmark_folder_hold_out, participant_id)
+            n_total_frames_hold_out = 0
+            for sequence_name in BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST:
+                n_frames = data_manager_hold_out.get_n_timesteps(sequence_name)
+                n_total_frames_hold_out += n_frames
+
+            print(participant_id, n_total_frames, n_total_frames_hold_out)
+
+            all_total_frames += n_total_frames
+            all_total_frames_hold_out += n_total_frames_hold_out
+
+        print("all", all_total_frames, all_total_frames_hold_out)
