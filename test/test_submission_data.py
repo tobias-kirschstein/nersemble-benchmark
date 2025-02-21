@@ -12,28 +12,26 @@ class SubmissionDataTest(TestCase):
         zip_path = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_submissions/submission_nvs.zip"
         benchmark_folder = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_hold_out"
 
-        submission_data_manager = NVSSubmissionDataWriter(zip_path)
+        with NVSSubmissionDataWriter(zip_path) as submission_data_manager:
+            for participant, sequence_name in BENCHMARK_NVS_IDS_AND_SEQUENCES:
+                data_manager = NVSDataManager(benchmark_folder, participant)
+                for serial in BENCHMARK_NVS_HOLD_OUT_SERIALS:
+                    images = data_manager.load_all_images(sequence_name, serial, as_uint8=True)
 
-        for participant, sequence_name in BENCHMARK_NVS_IDS_AND_SEQUENCES:
-            data_manager = NVSDataManager(benchmark_folder, participant)
-            for serial in BENCHMARK_NVS_HOLD_OUT_SERIALS:
-                images = data_manager.load_all_images(sequence_name, serial, as_uint8=True)
+                    submission_data_manager.add_video(participant, sequence_name, serial, images)
 
-                submission_data_manager.add_video(participant, sequence_name, serial, images)
-
-            break
+                break
 
     def test_mono_flame_avatar_submission_data(self):
         zip_path = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_submissions/submission_mono_flame_avatar.zip"
         benchmark_folder = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_hold_out"
 
-        submission_data_manager = MonoFlameAvatarSubmissionDataWriter(zip_path)
+        with MonoFlameAvatarSubmissionDataWriter(zip_path) as submission_data_manager:
+            for participant in BENCHMARK_MONO_FLAME_AVATAR_IDS:
+                data_manager = MonoFlameAvatarDataManager(benchmark_folder, participant)
+                for sequence_name in BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST:
+                    for serial in BENCHMARK_MONO_FLAME_AVATAR_SERIALS:
+                        images = data_manager.load_all_images(sequence_name, serial, as_uint8=True)
+                        submission_data_manager.add_video(participant, sequence_name, serial, images)
 
-        for participant in BENCHMARK_MONO_FLAME_AVATAR_IDS:
-            data_manager = MonoFlameAvatarDataManager(benchmark_folder, participant)
-            for sequence_name in BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST:
-                for serial in BENCHMARK_MONO_FLAME_AVATAR_SERIALS:
-                    images = data_manager.load_all_images(sequence_name, serial, as_uint8=True)
-                    submission_data_manager.add_video(participant, sequence_name, serial, images)
-
-            break
+                break

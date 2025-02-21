@@ -75,7 +75,7 @@ class BaseDataManager:
         assert Path(video_path).exists(), f"Could not find video {video_path}"
         video_capture = VideoFrameLoader(video_path)
 
-        images = video_capture.load_all_frames()
+        images = list(video_capture.load_all_frames())
 
         if not as_uint8:
             images = [image / 255. for image in images]

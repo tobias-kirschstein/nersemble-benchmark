@@ -24,6 +24,13 @@ class SubmissionDataWriter:
         self._width = width
         self._height = height
 
+    def __enter__(self):
+        self._zipf.__enter__()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._zipf.__exit__(exc_type, exc_val, exc_tb)
+
     def add_video(self, participant_id: int, sequence_name: str, serial: str, frames: List[np.ndarray]):
         assert frames[0].shape[2] == 3, "All frames should have 3 channels"
         assert frames[0].dtype == np.uint8, "Frames should be given as np.uint8 dtype with color values in range 0-255"

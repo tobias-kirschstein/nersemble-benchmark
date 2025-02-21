@@ -231,7 +231,7 @@ from nersemble_benchmark.data.submission_data import NVSSubmissionDataWriter
 zip_path = ...  #  <- Local path where you want to create your submission .zip file
 images = ...  # <-  List of uint8 numpy arrays (H, W, 3) in range 0-255 that hold the image data for all frames of a single camera
 
-submission_data_manager = NVSSubmissionDataWriter(zip_path)
-submission_data_manager.add_video(participant, sequence_name, serial, images)  #  <- will automatically package the images into a .mp4 file and place it correctly into the .zip
+with NVSSubmissionDataWriter(zip_path) as submission_data_manager:
+    submission_data_manager.add_video(participant, sequence_name, serial, images)  #  <- will automatically package the images into a .mp4 file and place it correctly into the .zip
 ```
 Note that the `NVSSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.
