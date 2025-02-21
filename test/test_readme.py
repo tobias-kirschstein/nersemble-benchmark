@@ -17,7 +17,7 @@ class ReadmeTest(TestCase):
         serial = BENCHMARK_NVS_TRAIN_SERIALS[0]  # <- Use first train camera
 
         data_manager = NVSDataManager(benchmark_folder, participant_id)
-        image = data_manager.load_image(sequence_name, serial, 0, apply_alpha_map=True, as_uint8=True)
+        image = data_manager.load_image(sequence_name, serial, 0, as_uint8=True)
         image = resize_img(image, 0.5)
         save_img(image, f"{REPO_ROOT}/static/images/example_image.jpg", quality=95)
 

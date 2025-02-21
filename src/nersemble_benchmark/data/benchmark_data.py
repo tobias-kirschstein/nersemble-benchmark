@@ -59,62 +59,25 @@ class BaseDataManager:
         image = video_capture.load_frame(timestep)[..., [0]]
         return image
 
-    def load_image(self, sequence_name: str, serial: str, timestep: int, apply_alpha_map: bool = False, as_uint8: bool = False) -> np.ndarray:
+    def load_image(self, sequence_name: str, serial: str, timestep: int, as_uint8: bool = False) -> np.ndarray:
         video_path = self.get_images_path(sequence_name, serial)
         assert Path(video_path).exists(), f"Could not find video {video_path}"
         video_capture = VideoFrameLoader(video_path)
         image = video_capture.load_frame(timestep)
 
-        if apply_alpha_map:
-            alpha_map = self.load_alpha_map(sequence_name, serial, timestep)
-            image = image / 255.
-            alpha_map = alpha_map / 255.
-            image = alpha_map * image + (1 - alpha_map)
-            if as_uint8:
-                image = np.clip(image * 255, 0, 255).astype(np.uint8)
-        elif not as_uint8:
+        if not as_uint8:
             image = image / 255.
 
         return image
 
-    def load_all_images(self, sequence_name: str, serial: str, apply_alpha_map: bool = False, as_uint8: bool = False) -> List[np.ndarray]:
+    def load_all_images(self, sequence_name: str, serial: str, as_uint8: bool = False) -> List[np.ndarray]:
         video_path = self.get_images_path(sequence_name, serial)
         assert Path(video_path).exists(), f"Could not find video {video_path}"
         video_capture = VideoFrameLoader(video_path)
 
         images = video_capture.load_all_frames()
 
-        if apply_alpha_map:
-            alpha_map_path = self.get_alpha_maps_path(sequence_name, serial)
-            alpha_video_capture = VideoFrameLoader(alpha_map_path)
-            alpha_maps = alpha_video_capture.load_all_frames()
-
-            def process_image(image_and_alpha_map):
-                image, alpha_map = image_and_alpha_map
-
-                a = (np.multiply(alpha_map.astype(np.float32), 1.0 / 255))
-                image = cv2.convertScaleAbs(image * a + (255 - alpha_map))
-
-                # image = image / 255.
-                # alpha_map = alpha_map / 255.
-                # image = alpha_map * image + (1 - alpha_map)
-                # if as_uint8:
-                #     image = np.clip(image * 255, 0, 255).astype(np.uint8)
-
-                return image
-
-            processed_images = thread_map(process_image, zip(images, alpha_maps))
-            images = processed_images
-            # for image, alpha_map in zip(images, alpha_maps):
-            #     image = image / 255.
-            #     alpha_map = alpha_map / 255.
-            #     image = alpha_map * image + (1 - alpha_map)
-            #     if as_uint8:
-            #         image = np.clip(image * 255, 0, 255).astype(np.uint8)
-            #
-            #     processed_images.append(image)
-
-        elif not as_uint8:
+        if not as_uint8:
             images = [image / 255. for image in images]
 
         return images

@@ -97,7 +97,7 @@ data_manager = NVSDataManager(benchmark_folder, participant_id)
 #### Load image
 
 ```python
-image = data_manager.load_image(sequence_name, serial, timestep, apply_alpha_map=True)  # <- Load first frame and remove background
+image = data_manager.load_image(sequence_name, serial, timestep)  # <- Load first frame. Background is already removed
 ```
 
 <img src="static/images/example_image.jpg" width="150px" alt="Loaded example image"/>

@@ -11,7 +11,7 @@ import pyvista as pv
 def main(benchmark_folder: str, participant_id: int, /, timestep: int = 0):
     data_manager = NVSDataManager(benchmark_folder, participant_id)
     sequence_name = [seq_name for p_id, seq_name in BENCHMARK_NVS_IDS_AND_SEQUENCES if p_id == participant_id][0]
-    images = {serial: data_manager.load_image(sequence_name, serial, timestep, apply_alpha_map=True) for serial in BENCHMARK_NVS_TRAIN_SERIALS}
+    images = {serial: data_manager.load_image(sequence_name, serial, timestep) for serial in BENCHMARK_NVS_TRAIN_SERIALS}
     camera_params = data_manager.load_camera_calibration()
 
     has_pointcloud = Path(data_manager.get_pointcloud_path(sequence_name, timestep)).exists()
