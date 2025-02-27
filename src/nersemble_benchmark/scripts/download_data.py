@@ -69,6 +69,7 @@ def main(
     if benchmark_type == 'nvs':
         if participant == 'all':
             benchmark_ids_sequences_and_timesteps = BENCHMARK_NVS_IDS_AND_SEQUENCES
+            benchmark_ids_sequences_and_timesteps = [(p_id, seq_name, BENCHMARK_NVS_TRAIN_SERIALS) for p_id, seq_name in benchmark_ids_sequences_and_timesteps]
         else:
             benchmark_ids_sequences_and_timesteps = [(p_id, seq_name, BENCHMARK_NVS_TRAIN_SERIALS) for p_id, seq_name in BENCHMARK_NVS_IDS_AND_SEQUENCES if p_id in participant]
 

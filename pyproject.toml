@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nersemble_benchmark"
-version = "0.0.9"
+version = "0.0.10"
 description = "Official devkit for the NeRSemble Photorealistic 3D Head Avatar Benchmark"
 authors = [
     { name = "Tobias Kirschstein", email = "tobias.kirschstein@gmail.com" },
