@@ -4,15 +4,20 @@ from abc import abstractmethod
 from collections import defaultdict
 from io import BytesIO
 from tempfile import TemporaryDirectory
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Tuple
 
+import imageio
 import mediapy
 import numpy as np
 from elias.util import ensure_directory_exists_for_file
+import imageio.v3 as iio
 
 from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCHMARK_NVS_HOLD_OUT_SERIALS, BENCHMARK_MONO_FLAME_AVATAR_IDS, \
     BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS, BENCHMARK_MONO_FLAME_AVATAR_SERIALS, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL, \
     BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST
+from nersemble_benchmark.data.benchmark_data import NVSDataManager
+from nersemble_benchmark.util.metadata import NVSMetadata, MonoFLAMEAvatarMetadata
+from nersemble_benchmark.util.video import VideoFrameLoader
 
 
 class SubmissionDataWriter:
@@ -89,7 +94,7 @@ class MonoFlameAvatarSubmissionDataWriter(SubmissionDataWriter):
         assert sequence_name in BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST, \
             f"Invalid sequence name {sequence_name}. Only the hold-out sequences {BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST} should be submitted"
         assert serial in BENCHMARK_MONO_FLAME_AVATAR_SERIALS, (f"Invalid serial {serial}. Only the train serial {BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL} "
-                                                         f"and the hold-out serials {BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS} should be submitted")
+                                                               f"and the hold-out serials {BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS} should be submitted")
 
 
 class SubmissionDataReader:
@@ -112,10 +117,52 @@ class SubmissionDataReader:
 
     def load_video(self, participant_id: int, sequence_name: str, serial: str) -> List[np.ndarray]:
         import imageio.v3 as iio
-        with self._zipf.open(f"{participant_id:03d}/{sequence_name}/cam_{serial}.mp4") as f:
+        video_path = self.get_video_path(participant_id, sequence_name, serial)
+        with self._zipf.open(video_path) as f:
             data = BytesIO(f.read())
             frames = iio.imread(data.getvalue(), plugin='pyav')
         return frames
+
+    def get_video_path(self, participant_id: int, sequence_name: str, serial: str) -> str:
+        return f"{participant_id:03d}/{sequence_name}/cam_{serial}.mp4"
+
+    @abstractmethod
+    def list_expected_files(self) -> List[str]:
+        pass
+
+    @abstractmethod
+    def list_expected_video_lengths(self) -> Dict[str, int]:
+        pass
+
+    @abstractmethod
+    def get_expected_resolution(self) -> Tuple[int, int]:
+        pass
+
+    def validate_submission(self):
+        expected_files = self.list_expected_files()
+        expected_lengths = self.list_expected_video_lengths()
+        expected_width, expected_height = self.get_expected_resolution()
+        actual_files = [file.filename for file in self._zipf.filelist]
+        missing_files = []
+        wrong_frame_counts = []
+        wrong_resolutions = []
+        for expected_file in expected_files:
+            if expected_file not in actual_files:
+                missing_files.append(expected_file)
+            else:
+                with self._zipf.open(expected_file) as f:
+                    image_props = iio.improps(f)
+                    n_frames_actual = image_props.n_images
+                    actual_height = image_props.shape[1]
+                    actual_width = image_props.shape[2]
+                    n_frames_expected = expected_lengths[expected_file]
+                    if n_frames_actual != n_frames_expected:
+                        wrong_frame_counts.append((expected_file, n_frames_actual, n_frames_expected))
+
+                    if actual_height != expected_height or actual_width != expected_width:
+                        wrong_resolutions.append((expected_file, (actual_width, actual_height), (expected_width, expected_height)))
+
+        return missing_files, wrong_frame_counts, wrong_resolutions
 
 
 class NVSSubmissionDataReader(SubmissionDataReader):
@@ -128,6 +175,28 @@ class NVSSubmissionDataReader(SubmissionDataReader):
             return False
         complete = all([serial in file_overview[participant_id][sequence_name] for serial in BENCHMARK_NVS_HOLD_OUT_SERIALS])
         return complete
+
+    def list_expected_files(self) -> List[str]:
+        expected_files = []
+        for participant_id, sequence_name in BENCHMARK_NVS_IDS_AND_SEQUENCES:
+            for serial in BENCHMARK_NVS_HOLD_OUT_SERIALS:
+                expected_files.append(self.get_video_path(participant_id, sequence_name, serial))
+
+        return expected_files
+
+    def list_expected_video_lengths(self) -> Dict[str, int]:
+        expected_video_lengths = dict()
+        nvs_metadata = NVSMetadata.load()
+        for participant_id, sequence_name in BENCHMARK_NVS_IDS_AND_SEQUENCES:
+            expected_length = len(nvs_metadata.sequences[participant_id].timesteps)
+            for serial in BENCHMARK_NVS_HOLD_OUT_SERIALS:
+                video_path = self.get_video_path(participant_id, sequence_name, serial)
+                expected_video_lengths[video_path] = expected_length
+
+        return expected_video_lengths
+
+    def get_expected_resolution(self) -> Tuple[int, int]:
+        return 1100, 1604
 
 
 class MonoFlameAvatarSubmissionDataReader(SubmissionDataReader):
@@ -153,3 +222,27 @@ class MonoFlameAvatarSubmissionDataReader(SubmissionDataReader):
                         return False
 
         return True
+
+    def list_expected_files(self) -> List[str]:
+        expected_files = []
+        for participant_id in BENCHMARK_MONO_FLAME_AVATAR_IDS:
+            for sequence_name in BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST:
+                for serial in BENCHMARK_MONO_FLAME_AVATAR_SERIALS:
+                    expected_files.append(self.get_video_path(participant_id, sequence_name, serial))
+
+        return expected_files
+
+    def list_expected_video_lengths(self) -> Dict[str, int]:
+        expected_video_lengths = dict()
+        mono_avatar_metadata = MonoFLAMEAvatarMetadata.load()
+        for participant_id in BENCHMARK_MONO_FLAME_AVATAR_IDS:
+            for sequence_name in BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST:
+                for serial in BENCHMARK_MONO_FLAME_AVATAR_SERIALS:
+                    expected_length = mono_avatar_metadata.participants_metadata[participant_id].sequences_metadata[sequence_name].n_frames
+                    video_path = self.get_video_path(participant_id, sequence_name, serial)
+                    expected_video_lengths[video_path] = expected_length
+
+        return expected_video_lengths
+
+    def get_expected_resolution(self) -> Tuple[int, int]:
+        return 512, 512

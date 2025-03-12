@@ -5,6 +5,7 @@ from unittest import TestCase
 import numpy as np
 from dreifus.pyvista import add_camera_frustum, add_coordinate_axes
 from dreifus.render import project, draw_onto_image
+from matplotlib import pyplot as plt
 
 from nersemble_benchmark.constants import BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL, BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS, \
     BENCHMARK_MONO_FLAME_AVATAR_IDS, BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES, BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TRAIN, \
@@ -83,3 +84,24 @@ class MonoAvatarTest(TestCase):
             all_total_frames_hold_out += n_total_frames_hold_out
 
         print("all", all_total_frames, all_total_frames_hold_out)
+
+    def test_flame_projection_avat3r(self):
+        benchmark_folder = "D:/Projects/PhD-6_Topology_free_Decoder/analyses/avat3r_nersemble_dataset_test"
+        participant_id = 36
+
+        data_manager = MonoFlameAvatarDataManager(benchmark_folder, participant_id)
+        sequence_name = data_manager.list_sequences()[0]
+        serial = data_manager.list_serials(sequence_name)[0]
+        image = data_manager.load_image(sequence_name, serial, 0, as_uint8=True)
+        flame_tracking = data_manager.load_flame_tracking(sequence_name)
+        flame_provider = FlameProvider(flame_tracking)
+        vertices = flame_provider.get_vertices(0)
+
+        camera_calibration = data_manager.load_camera_calibration()
+
+        projected_points = project(vertices, camera_calibration.world_2_cam[serial], camera_calibration.intrinsics[serial])
+        draw_onto_image(image, projected_points, (0, 255, 0))
+
+        plt.imshow(image)
+        plt.show()
+

@@ -3,7 +3,8 @@ from unittest import TestCase
 from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCHMARK_NVS_HOLD_OUT_SERIALS, BENCHMARK_MONO_FLAME_AVATAR_IDS, \
     BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST, BENCHMARK_MONO_FLAME_AVATAR_SERIALS
 from nersemble_benchmark.data.benchmark_data import NVSDataManager, MonoFlameAvatarDataManager
-from nersemble_benchmark.data.submission_data import NVSSubmissionDataWriter, MonoFlameAvatarSubmissionDataWriter
+from nersemble_benchmark.data.submission_data import NVSSubmissionDataWriter, MonoFlameAvatarSubmissionDataWriter, NVSSubmissionDataReader, \
+    MonoFlameAvatarSubmissionDataReader
 
 
 class SubmissionDataTest(TestCase):
@@ -22,6 +23,14 @@ class SubmissionDataTest(TestCase):
 
                 break
 
+    def test_validate_nvs_submission_data(self):
+        zip_path = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_submissions/nersemble_deformable3dgs_incomplete.zip"
+        benchmark_folder = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_hold_out"
+
+        data_reader = NVSSubmissionDataReader(zip_path)
+        data_reader.validate_submission()
+
+
     def test_mono_flame_avatar_submission_data(self):
         zip_path = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_submissions/submission_mono_flame_avatar.zip"
         benchmark_folder = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_hold_out"
@@ -35,3 +44,11 @@ class SubmissionDataTest(TestCase):
                         submission_data_manager.add_video(participant, sequence_name, serial, images)
 
                 break
+
+    def test_validate_mono_avatar_submission_data(self):
+        zip_path = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_submissions/submission_mono_flame_avatar.zip"
+        benchmark_folder = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_hold_out"
+
+        data_reader = MonoFlameAvatarSubmissionDataReader(zip_path)
+        result = data_reader.validate_submission()
+        print('hi')

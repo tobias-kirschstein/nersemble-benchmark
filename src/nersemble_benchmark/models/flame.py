@@ -36,7 +36,7 @@ class FlameProvider:
 
         self._T = self.expr_params.shape[0]
 
-    def get_vertices(self, timestep: int) -> np.array:
+    def get_vertices(self, timestep: int) -> np.ndarray:
         i = timestep
 
         # FLAME forward
@@ -53,7 +53,7 @@ class FlameProvider:
 
         return flame_vertices
 
-    def get_landmarks(self, timestep: int) -> torch.Tensor:
+    def get_landmarks(self, timestep: int) -> np.ndarray:
         i = timestep
 
         # FLAME forward

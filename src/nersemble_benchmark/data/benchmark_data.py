@@ -43,6 +43,11 @@ class BaseDataManager:
     def list_timesteps(self, sequence_name: str) -> List[int]:
         return list(range(self.get_n_timesteps(sequence_name)))
 
+    def list_sequences(self) -> List[str]:
+        sequences_folder = Path(self.get_images_path("sequence", "serial")).parent.parent.parent
+        sequence_names = [seq_folder.name for seq_folder in sequences_folder.iterdir() if seq_folder.is_dir()]
+        return sequence_names
+
     def list_serials(self, sequence_name: str) -> List[str]:
         images_folder = Path(self.get_images_path(sequence_name, "serial")).parent
         serials = [file.stem.split('_')[1] for file in images_folder.iterdir()]
