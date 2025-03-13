@@ -32,7 +32,7 @@ class SubmissionDataTest(TestCase):
 
 
     def test_mono_flame_avatar_submission_data(self):
-        zip_path = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_submissions/submission_mono_flame_avatar.zip"
+        zip_path = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_submissions/submission_mono_flame_avatar_complete.zip"
         benchmark_folder = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_hold_out"
 
         with MonoFlameAvatarSubmissionDataWriter(zip_path) as submission_data_manager:
@@ -42,8 +42,6 @@ class SubmissionDataTest(TestCase):
                     for serial in BENCHMARK_MONO_FLAME_AVATAR_SERIALS:
                         images = data_manager.load_all_images(sequence_name, serial, as_uint8=True)
                         submission_data_manager.add_video(participant, sequence_name, serial, images)
-
-                break
 
     def test_validate_mono_avatar_submission_data(self):
         zip_path = "D:/Projects/3D_Face_Scanning_Rig/analyses/benchmark_v1_submissions/submission_mono_flame_avatar.zip"

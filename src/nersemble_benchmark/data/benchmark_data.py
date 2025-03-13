@@ -1,6 +1,7 @@
 from dataclasses import dataclass
+from itertools import islice
 from pathlib import Path
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 import cv2
 import numpy as np
@@ -75,12 +76,18 @@ class BaseDataManager:
 
         return image
 
-    def load_all_images(self, sequence_name: str, serial: str, as_uint8: bool = False) -> List[np.ndarray]:
+    def load_all_images(self, sequence_name: str, serial: str, as_uint8: bool = False, every_nth_frame: Optional[int] = None) -> List[np.ndarray]:
         video_path = self.get_images_path(sequence_name, serial)
         assert Path(video_path).exists(), f"Could not find video {video_path}"
         video_capture = VideoFrameLoader(video_path)
 
-        images = list(video_capture.load_all_frames())
+        if every_nth_frame is not None:
+            import imageio.v3 as iio
+            image_props = iio.improps(video_path)
+            images = video_capture.load_all_frames()
+            images = list(islice(images, 0, image_props.n_images, every_nth_frame))
+        else:
+            images = list(video_capture.load_all_frames())
 
         if not as_uint8:
             images = [image / 255. for image in images]
