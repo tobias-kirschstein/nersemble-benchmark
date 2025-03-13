@@ -12,6 +12,7 @@ import mediapy
 import numpy as np
 from elias.util import ensure_directory_exists_for_file
 import imageio.v3 as iio
+from elias.util.io import resize_img
 
 from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCHMARK_NVS_HOLD_OUT_SERIALS, BENCHMARK_MONO_FLAME_AVATAR_IDS, \
     BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS, BENCHMARK_MONO_FLAME_AVATAR_SERIALS, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL, \
@@ -116,17 +117,26 @@ class SubmissionDataReader:
 
         return file_overview
 
-    def load_video(self, participant_id: int, sequence_name: str, serial: str, every_nth_frame: Optional[int] = None) -> List[np.ndarray]:
+    def load_video(self,
+                   participant_id: int,
+                   sequence_name: str,
+                   serial: str,
+                   every_nth_frame: Optional[int] = None,
+                   scale: Optional[float] = None) -> List[np.ndarray]:
         import imageio.v3 as iio
         video_path = self.get_video_path(participant_id, sequence_name, serial)
         with self._zipf.open(video_path) as f:
             data = BytesIO(f.read())
             if every_nth_frame is not None:
-                image_props = iio.improps(video_path)
+                image_props = iio.improps(f)
                 frames = iio.imiter(data.getvalue(), plugin='pyav')
                 frames = list(islice(frames, 0, image_props.n_images, every_nth_frame))
             else:
                 frames = iio.imread(data.getvalue(), plugin='pyav')
+
+        if scale is not None:
+            frames = [resize_img(frame, scale) for frame in frames]
+
         return frames
 
     def get_video_path(self, participant_id: int, sequence_name: str, serial: str) -> str:

@@ -10,6 +10,7 @@ from dreifus.camera import CameraCoordinateConvention, PoseType
 from dreifus.matrix import Pose, Intrinsics
 from elias.config import Config
 from elias.util import load_json
+from elias.util.io import resize_img
 from tqdm.contrib.concurrent import thread_map
 
 from nersemble_benchmark.constants import ASSETS, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL
@@ -76,7 +77,12 @@ class BaseDataManager:
 
         return image
 
-    def load_all_images(self, sequence_name: str, serial: str, as_uint8: bool = False, every_nth_frame: Optional[int] = None) -> List[np.ndarray]:
+    def load_all_images(self,
+                        sequence_name: str,
+                        serial: str,
+                        as_uint8: bool = False,
+                        every_nth_frame: Optional[int] = None,
+                        scale: Optional[float] = None) -> List[np.ndarray]:
         video_path = self.get_images_path(sequence_name, serial)
         assert Path(video_path).exists(), f"Could not find video {video_path}"
         video_capture = VideoFrameLoader(video_path)
@@ -88,6 +94,9 @@ class BaseDataManager:
             images = list(islice(images, 0, image_props.n_images, every_nth_frame))
         else:
             images = list(video_capture.load_all_frames())
+
+        if scale is not None:
+            images = [resize_img(image, scale) for image in images]
 
         if not as_uint8:
             images = [image / 255. for image in images]
