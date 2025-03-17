@@ -4,21 +4,17 @@ This is the official NeRSemble Benchmark Toolkit for downloading the data and pr
 For submitting your results, please go to our [submission system](https://kaldir.vc.in.tum.de/nersemble_benchmark/).
 
 
-## 1. Setup
+## 1. Data Access & Setup
 
-### Repository installation
-
-```shell
-pip install nersemble_benchmark@git+ssh://git@github.com/tobias-kirschstein/nersemble-benchmark.git
-```
-
-### Environment variables
-
-Create a file at `~/.config/nersemble_benchmark/.env` with following content:
-
-```python
-NERSEMBLE_BENCHMARK_URL = "<<<URL YOU GOT WHEN REQUESTING ACCESS TO NERSEMBLE>>>"
-```
+ 1. Request access to the NeRSemble dataset (only necessary if you did not request access previously): https://forms.gle/rYRoGNh2ed51TDWX9
+ 2. Once approved, you will receive a mail with the download link in the form of
+ ```NERSEMBLE_BENCHMARK_URL = "..."```
+ 3. Create a file at `~/.config/nersemble_benchmark/.env` with following content:
+    ```python
+    NERSEMBLE_BENCHMARK_URL = "<<<URL YOU GOT WHEN REQUESTING ACCESS TO NERSEMBLE>>>"
+    ```
+ 4. Install this repository via
+    ```pip install nersemble_benchmark```
 
 ## 2. Data Download
 
