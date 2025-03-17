@@ -1,6 +1,8 @@
 # NeRSemble Photorealistic 3D Head Avatar Benchmark
 
-This is the official repository containing the devkit for downloading the data and submitting results to the NeRSemble Photorealistic 3D Head Avatar benchmarks.
+This is the official NeRSemble Benchmark Toolkit for downloading the data and preparing submissions for the NeRSemble Photorealistic 3D Head Avatar benchmarks.  
+For submitting your results, please go to our [submission system](https://kaldir.vc.in.tum.de/nersemble_benchmark/).
+
 
 ## 1. Setup
 
