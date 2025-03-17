@@ -7,8 +7,10 @@ For submitting your results, please go to our [submission system](https://kaldir
 ## 1. Data Access & Setup
 
  1. Request access to the NeRSemble dataset (only necessary if you did not request access previously): https://forms.gle/rYRoGNh2ed51TDWX9
- 2. Once approved, you will receive a mail with the download link in the form of
- ```NERSEMBLE_BENCHMARK_URL = "..."```
+    2. Once approved, you will receive a mail with the download link in the form of
+    ```python
+    NERSEMBLE_BENCHMARK_URL = "..."
+    ```
  3. Create a file at `~/.config/nersemble_benchmark/.env` with following content:
     ```python
     NERSEMBLE_BENCHMARK_URL = "<<<URL YOU GOT WHEN REQUESTING ACCESS TO NERSEMBLE>>>"
