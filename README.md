@@ -188,6 +188,9 @@ python scripts/visualize/visualize_flame_tracking.py ${benchmark_folder} --parti
 
 ## 4. Submission
 
+Submissions to the benchmark tasks are done by uploading a submission `.zip` file to our [submission system](https://kaldir.vc.in.tum.de/nersemble_benchmark/).
+The following describes the expected format of a submission `.zip` file.
+
 ### 4.1. NVS Benchmark
 
 #### Submission .zip creation
@@ -204,7 +207,7 @@ for serial in BENCHMARK_NVS_HOLD_OUT_SERIALS:
     ...  #  <- Render video from your reconstructed 4D representation
 ```
 
-Once you obtained the images from the hold out viewpoints for all frames of the 5 benchmark sequences, you can pack them into a `.zip` file for submission.  
+Once you rendered the images from the hold out viewpoints for all frames of the 5 benchmark sequences, you can pack them into a `.zip` file for submission.  
 The expected structure of the `.zip` file is as follows:
 ```yaml
 nvs_submission.zip
@@ -235,3 +238,64 @@ with NVSSubmissionDataWriter(zip_path) as submission_data_manager:
     submission_data_manager.add_video(participant, sequence_name, serial, images)  #  <- will automatically package the images into a .mp4 file and place it correctly into the .zip
 ```
 Note that the `NVSSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.
+
+### 4.2. Monocular FLAME Avatar Benchmark
+
+#### Submission .zip creation
+
+For each of the 4 hold-out sequences of the 5 benchmark people, you need to render the whole sequence from the three hold-out cameras (`222200046`, `220700191`, `222200039`) as well as the train camera (`222200037`).  
+The corresponding camera extrinsics and intrinsics can be loaded the same way as the train cameras:
+```python
+from nersemble_benchmark.constants import BENCHMARK_MONO_FLAME_AVATAR_IDS, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL, BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS, BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST
+
+camera_params = data_manager.load_camera_calibration()
+for participant_id in BENCHMARK_MONO_FLAME_AVATAR_IDS:
+    for sequence_name in BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST:
+        flame_tracking = data_manager.load_flame_tracking(sequence_name)
+        flame_provider = FlameProvider(flame_tracking)  # <- Use FLAME tracking to get expression codes / tracked meshes for hold-out sequence
+        # 3 hold-out cameras
+        for serial in BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS:
+            world_2_cam_pose = camera_params.world_2_cam[serial]
+            intrinsics = camera_params.intrinsics[serial]
+            ...  #  <- Render video from your reconstructed 3D head avatar representation
+
+        # train viewpoint
+        serial = BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL
+        world_2_cam_pose = camera_params.world_2_cam[serial]
+        intrinsics = camera_params.intrinsics[serial]
+        ...  #  <- Render video from your reconstructed 3D head avatar representation
+```
+
+Once you rendered all frames from the 4 viewpoints for all 4 hold-out sequences of the 5 benchmark persons, you can pack them into a `.zip` file for submission.  
+The expected structure of the `.zip` file is as follows:
+```yaml
+mono_flame_avatar_submission.zip
+├── 393
+│   ├── EMO-1-shout+laugh
+│   │   ├── cam_220700191.mp4  # <- Video predictions from your method
+│   │   ├── cam_222200037.mp4
+│   │   ├── cam_222200039.mp4
+│   │   └── cam_222200046.mp4
+│   ┆
+│   └── SEN-10-port_strong_smokey
+│       ├── cam_220700191.mp4
+│       ├── cam_222200037.mp4
+│       ├── cam_222200039.mp4
+│       └── cam_222200046.mp4
+┆
+└── 486
+    └── ...
+```
+Since `.mp4` is a lossy compression format, we use a very high quality setting of `--crf 14` to ensure the metric calculation is not affected by compression artifacts.
+
+To facilitate the creation of the submission .zip, this repository also contains some Python helpers that you can use:
+```python
+from nersemble_benchmark.data.submission_data import MonoFlameAvatarSubmissionDataWriter
+
+zip_path = ...  #  <- Local path where you want to create your submission .zip file
+images = ...  # <-  List of uint8 numpy arrays (H, W, 3) in range 0-255 that hold the image data for all frames of a single camera
+
+with MonoFlameAvatarSubmissionDataWriter(zip_path) as submission_data_manager:
+    submission_data_manager.add_video(participant, sequence_name, serial, images)  #  <- will automatically package the images into a .mp4 file and place it correctly into the .zip
+```
+Note that the `MonoFlameAvatarSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.
