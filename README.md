@@ -3,7 +3,7 @@
 This is the official NeRSemble Benchmark Toolkit for downloading the data and preparing submissions for the NeRSemble Photorealistic 3D Head Avatar benchmarks.  
 For submitting your results, please go to our [submission system](https://kaldir.vc.in.tum.de/nersemble_benchmark/).
 
-![](static/videos/NeRSemble_Benchmark_Teaser_compressed.mp4)
+![](static/videos/NeRSemble_Benchmark_Teaser.gif)
 
 ## 1. Data Access & Setup
 
