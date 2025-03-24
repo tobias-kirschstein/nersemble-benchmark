@@ -237,7 +237,8 @@ images = ...  # <-  List of uint8 numpy arrays (H, W, 3) in range 0-255 that hol
 with NVSSubmissionDataWriter(zip_path) as submission_data_manager:
     submission_data_manager.add_video(participant, sequence_name, serial, images)  #  <- will automatically package the images into a .mp4 file and place it correctly into the .zip
 ```
-Note that the `NVSSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.
+Note that the `NVSSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.  
+After creation, you can submit the `.zip` to the [Dynamic NVS benchmark](https://kaldir.vc.in.tum.de/nersemble_benchmark/benchmark/nvs).
 
 ### 4.2. Monocular FLAME Avatar Benchmark
 
@@ -298,4 +299,6 @@ images = ...  # <-  List of uint8 numpy arrays (H, W, 3) in range 0-255 that hol
 with MonoFlameAvatarSubmissionDataWriter(zip_path) as submission_data_manager:
     submission_data_manager.add_video(participant, sequence_name, serial, images)  #  <- will automatically package the images into a .mp4 file and place it correctly into the .zip
 ```
-Note that the `MonoFlameAvatarSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.
+Note that the `MonoFlameAvatarSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.  
+After creation, you can submit the `.zip` to the [Monocular FLAME Avatar benchmark](https://kaldir.vc.in.tum.de/nersemble_benchmark/benchmark/mono_flame_avatar).
+
