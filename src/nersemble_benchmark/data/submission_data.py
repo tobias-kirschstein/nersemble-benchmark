@@ -122,6 +122,7 @@ class SubmissionDataReader:
                    sequence_name: str,
                    serial: str,
                    every_nth_frame: Optional[int] = None,
+                   timestep: Optional[int] = None,
                    scale: Optional[float] = None) -> List[np.ndarray]:
         import imageio.v3 as iio
         video_path = self.get_video_path(participant_id, sequence_name, serial)
@@ -132,7 +133,9 @@ class SubmissionDataReader:
                 frames = iio.imiter(data.getvalue(), plugin='pyav')
                 frames = list(islice(frames, 0, image_props.n_images, every_nth_frame))
             else:
-                frames = iio.imread(data.getvalue(), plugin='pyav')
+                frames = iio.imread(data.getvalue(), plugin='pyav', index=timestep)
+                if timestep is not None:
+                    frames = [frames]
 
         if scale is not None:
             frames = [resize_img(frame, scale) for frame in frames]
