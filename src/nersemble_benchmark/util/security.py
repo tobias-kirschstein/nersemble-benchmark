@@ -34,7 +34,8 @@ def validate_nersemble_benchmark_url():
     while True:
         salt = "aL8jN4%Y1h%9fG7U"
         hash = hashlib.md5(f"{salt}-{NERSEMBLE_BENCHMARK_URL}".encode()).hexdigest()
-        if hash == "c0140cfad39e3e15479451c389c71a5b":
+        if hash == 'c0140cfad39e3e15479451c389c71a5b' or hash == 'ac20bad14f879b8e9c3f7668db90b73f':
+            # Correct NERSEMBLE_BENCHMARK_URL
             break
         else:
             print("The NERSEMBLE_BENCHMARK_URL that you configured is not correct.")
