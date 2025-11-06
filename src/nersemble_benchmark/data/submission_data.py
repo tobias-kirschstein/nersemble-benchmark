@@ -41,8 +41,8 @@ class SubmissionDataWriter:
     def add_video(self, participant_id: int, sequence_name: str, serial: str, frames: List[np.ndarray]):
         assert frames[0].shape[2] == 3, "All frames should have 3 channels"
         assert frames[0].dtype == np.uint8, "Frames should be given as np.uint8 dtype with color values in range 0-255"
-        assert frames[0].shape[0] == self._height, "All frames should have height 1604px"
-        assert frames[0].shape[1] == self._width, "All frames should have width 1100px"
+        assert frames[0].shape[0] == self._height, f"All frames should have height {self._height}px"
+        assert frames[0].shape[1] == self._width, f"All frames should have width {self._width}px"
         self._validate_video(participant_id, sequence_name, serial, frames)
 
         arcname = f"{participant_id:03d}/{sequence_name}/cam_{serial}.mp4"
