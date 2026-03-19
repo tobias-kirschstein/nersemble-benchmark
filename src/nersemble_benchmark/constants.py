@@ -34,7 +34,13 @@ ASSETS = {
                 [
                     "flame2023_tracking"
                 ]
-        }
+        },
+    "svfr": {
+        "per_image":
+            {
+                "images": "{p_id:03d}/{seq_name:}_{timestep:}_{serial:}/rgb.png"
+            }
+    }
 }
 
 SERIALS = ["222200042", "222200044", "222200046", "222200040", "222200036", "222200048", "220700191", "222200041",

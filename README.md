@@ -5,6 +5,13 @@ For submitting your results, please go to our [submission system](https://kaldir
 
 ![](static/videos/NeRSemble_Benchmark_Teaser.gif)
 
+### Overview of task instructions
+| Benchmark | Download                                        | Data Usage                                                                                | Submission                                                                    |
+| --- |-------------------------------------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
+| Dynamic Novel View Synthesis (NVS) | [Download NVS data](#22-nvs-benchmark-download) | [Video data loading](#31-shared-data-managers) + [NVS assets](#32-nvs-data-manager-assets) | [Submit to NVS benchmark](#41-nvs-benchmark)                                  | 
+ | Monocular FLAME Avatar | [Download Monocular FLAME Avatar data](#23-mono-flame-avatar-benchmark-download) | [Video data loading](#31-shared-data-managers) + [Mono FLAME Avatar assets](#33-mono-flame-avatar-assets)                                  | [Submit to Mono FLAME Avatar benchmark](#42-monocular-flame-avatar-benchmark) |
+ | Single-view 3D Face Reconstruction (SVFR) | [Download SVFR data](#24-single-view-3d-face-reconstruction-benchmark-download) | [SVFR data usage](#34-input-images-for-single-view-3d-face-reconstruction)                | [Submit to SVFR benchmark](#43-single-view-3d-face-reconstruction)            |
+
 ## 1. Data Access & Setup
 
  1. Request access to the NeRSemble dataset (only necessary if you did not request access previously): https://forms.gle/rYRoGNh2ed51TDWX9
@@ -25,7 +32,7 @@ After installation of the benchmark repository, a `nersemble-benchmark-download`
 This is the main tool to download the benchmark data. To get a detailed description of download options, run `nersemble-benchmark-download --help`.
 In the following, `${benchmark_folder}` denotes the path to your local folder where the benchmark data should be downloaded to.
 
-### Overview
+### 2.1. Overview
 
 #### NVS Benchmark (1604 x 1100)
 
@@ -54,8 +61,14 @@ Only a single camera is provided for training: `222200037`.
 For all participants, the same 4 sequences are held out: `EMO-1-shout+laugh`, `FREE`, `SEN-09-frown_events_bad`, and `SEN-10-port_strong_smokey`.
 To compute test metrics, both the training camera as well as 3 hold-out cameras (`222200046`, `220700191`, `222200039`) are used to compute the test metrics.
 
+#### Single-view 3D Face Reconstruction Benchmark (512x512)
+| \#Participants | \#Frames | Size   |
+|----------------|----------|--------|
+| 20             | 391      | 125 MB |
+For the SVFR benchmark, 391 images from 20 different people are provided for which a posed and/or neutral 3D face reconstruction needs to be submitted.
+Test metrics are computed as geometric distances between the submitted meshes and hold-out pointclouds.  
 
-### NVS Benchmark download
+### 2.2. NVS Benchmark download
 
 ```shell
 nersemble-benchmark-download ${benchmark_folder} nvs 
@@ -66,7 +79,7 @@ The NVS benchmark also comes with pointclouds for each timestep that can be used
 Due to their size, per default only the first pointcloud of each sequence is downloaded which can be helpful to initialize 3D Gaussians for example.
 To download the pointclouds for all frames of the benchmark sequences, use `--pointcloud_frames all`. The pointclouds contain 3D point positions, colors, and normals.
 
-### Mono FLAME Avatar Benchmark download
+### 2.3. Mono FLAME Avatar Benchmark download
 
 ```bash
 nersemble-benchmark-download ${benchmark_folder} mono_flame_avatar 
@@ -77,9 +90,15 @@ nersemble-benchmark-download ${benchmark_folder} mono_flame_avatar
 The Mono FLAME Avatar benchmark comes with FLAME tracking for each timesteps of both the train sequences as well as the hold-out sequences.  
 These are downloaded per default, but can also be specifically targeted for download via `--assets flame2023_tracking`.
 
+### 2.4. Single-view 3D Face Reconstruction Benchmark download
+
+```bash
+nersemble-benchmark-download ${benchmark_folder} svfr 
+```
+
 ## 3. Usage
 
-### Data Managers
+### 3.1. Shared Data Managers
 
 The benchmark repository provides data managers to simplify loading individual assets such as images in Python code.
 
@@ -128,7 +147,7 @@ python scripts/visualize/visualize_cameras.py ${benchmark_folder} 388
 
 <img src="static/images/example_cameras.jpg" width="300px" alt="Loaded example cameras"/>
 
-### NVS Data Manager assets
+### 3.2. NVS Data Manager assets
 The dynamic NVS benchmark has some assets specific to the benchmark. The following code assumes the use of a `NVSDataManager`:
 ```python
 from nersemble_benchmark.data.benchmark_data import NVSDataManager
@@ -142,7 +161,7 @@ points, colors, normals = nvs_data_manager.load_pointcloud(sequence_name, timest
 ```
 <img src="static/images/example_pointcloud.jpg" width="150px" alt="Loaded example pointcloud"/>
 
-### Mono FLAME Avatar assets
+### 3.3. Mono FLAME Avatar assets
 The Mono FLAME Avatar benchmark has some additional assets specific to the benchmark. The following code assumes the use of a `MonoFlameAvatarDataManager`:
 ```python
 from nersemble_benchmark.data.benchmark_data import MonoFlameAvatarDataManager
@@ -186,6 +205,22 @@ The [visualize_flame_tracking.py](scripts/visualize/visualize_flame_tracking.py)
 python scripts/visualize/visualize_flame_tracking.py ${benchmark_folder} --participant_id 461
 ```
 <img src="static/images/example_flame_tracking.jpg" width="300px" alt="FLAME Tracking example"/>
+
+### 3.4. Input Images for Single-view 3D Face Reconstruction
+The Single-view 3D Face Reconstruction (SVFR) benchmark consists of 391 images from 20 different people.
+The images have a resolution of 512x512, are already cropped to the face region, and can be accessed as follows:
+```python
+from nersemble_benchmark.constants import BENCHMARK_SVFR_IDS
+from nersemble_benchmark.data.benchmark_data import SVFRDataManager
+
+for participant_id in BENCHMARK_SVFR_IDS:  # <- Iterate over all 20 benchmark persons
+    svfr_data_manager = SVFRDataManager(benchmark_folder, participant_id)
+    image_keys = svfr_data_manager.list_image_keys()  # <- Get the list of images for that person
+
+    for image_key in image_keys:
+        image = svfr_data_manager.load_image(image_key)  # <- Load the actual image
+        ... # <- Run your 3D face reconstruction pipeline
+```
 
 ## 4. Submission
 
@@ -303,3 +338,68 @@ with MonoFlameAvatarSubmissionDataWriter(zip_path) as submission_data_manager:
 Note that the `MonoFlameAvatarSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.  
 After creation, you can submit the `.zip` to the [Monocular FLAME Avatar benchmark](https://kaldir.vc.in.tum.de/nersemble_benchmark/benchmark/mono_flame_avatar).
 
+### 4.3. Single-view 3D Face Reconstruction
+
+The Single-view 3D Face Reconstruction consists of 2 subtasks:
+ * Posed 3D Face Reconstruction: Provide a 3D mesh with the same facial expression as the input image
+ * Neutral 3D Face Reconstruction: Provide a 3D mesh with the same person as the input image but a neutral expression
+
+With a single submission, you can submit to either of these two subtasks, or both of them. The submission system will automatically detect which meshes are present and evaluate the corresponding subtasks.
+
+#### Submission .zip creation
+
+For each of the 391 images, you need to provide a 3D mesh in posed and/or neutral expression.
+
+The expected structure of the `.zip` file is as follows:
+```yaml
+svfr_submission.zip
+├── 017  # participant_id
+│   ├── EMO-1-shout+laugh_156_221501007  # image_key
+│   │   ├── mesh_neutral.ply      # Posed prediction [only when submitting to posed subtask]
+│   │   ├── mesh_posed.ply        # Neutral prediction [only when submitting to neutral subtask]
+│   │   ├── landmarks_neutral.npy # (Optional) 7 NoW landmarks [only when neutral mesh has not FLAME topology]
+│   │   └── landmarks_posed.npy   # (Optional) 7 NoW landmarks [only when posed mesh has not FLAME topology]
+│   ┆
+│   └── FREE_786_222200038
+│       ├── mesh_neutral.ply
+│       ├── mesh_posed.ply
+│       ├── landmarks_neutral.npy
+│       └── landmarks_posed.npy
+┆
+└── 372
+    └── ...
+```
+You can either provide `mesh_neutral.ply` or `mesh_posed.ply` or both of them in a single `.zip` file. The landmark files are only needed in case your reconstructed mesh has a different topology than FLAME. 
+In this case, you additionally need to provide a `7x3` numpy array containing the 3D positions of 7 facial landmarks following the [convention of the NoW benchmark](https://github.com/soubhiksanyal/now_evaluation/blob/main/landmarks_7_annotated.png) (left corner of left eye, right corner of left eye, left corner of right eye, right corner of right eye, center point below nose, left mouth corner, right mouth corner).
+These landmarks are needed to align your reconstructed mesh with the ground-truth pointcloud before evaluation metrics are computed. If your reconstructed mesh is in FLAME topology, the evaluation will automatically infer the 7 landmarks from the mesh. Since this rigid alignment is performed during evaluation, the choice of your mesh's world space does not matter for the metric computation. 
+
+To facilitate the creation of the submission .zip, this repository also contains some Python helpers that you can use.
+The following code assumes you want to submit to the `Posed 3D Face Reconstruction` subtask. Submitting to the neutral subtask or both of them, is done analogously.
+
+```python
+from nersemble_benchmark.constants import BENCHMARK_SVFR_IMAGE_KEYS
+from nersemble_benchmark.data.submission_data import SVFRSubmissionDataWriter
+
+zip_path = ...  #  <- Local path where you want to create your submission .zip file
+
+with SVFRSubmissionDataWriter(zip_path) as submission_data_writer:
+    for participant_id, image_keys in BENCHMARK_SVFR_IMAGE_KEYS.items():
+        for sequence_name, timestep, serial in image_keys:
+            mesh = ...  # <- Your prediction for the input image
+            now_landmarks = ...  # Optionally, a 7x3 numpy array containing the 3D positions of the 7 NoW landmarks on your mesh  
+            
+            # If you want to submit to the posed reconstruction subtask:
+            submission_data_writer.add_posed_mesh(participant_id, sequence_name, timestep, serial, mesh, now_landmarks)
+
+            # If you want to submit to the neutral reconstruction subtask, use submission_data_writer.add_neutral_mesh(...) instead
+```
+
+As an overview, there are 4 different ways to provide meshes with the `SVFRSubmissionDataWriter`:
+
+| Task | Mesh has FLAME topology (5023 vertices)                         | Mesh has arbitrary topology                                                          |
+|---|-----------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| Posed Reconstruction | <pre>submission_writer.add_<b>posed</b>_mesh(..., mesh)</pre>   | <pre>submission_writer.add_<b>posed</b>_mesh(..., mesh, <b>now_landmarks</b>)</pre>  |
+| Neutral Reconstruction | <pre>submission_writer.add_<b>neutral</b>_mesh(..., mesh)</pre> | <pre>submission_writer.add_<b>neutral</b>_mesh(..., mesh, <b>now_landmarks</b>)</pre> |
+
+Note that the `SVFRSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predicted meshes for all input images have to be added at once.
+After creation, you can submit the `.zip` to the [Single-view 3D Face Reconstruction benchmark](https://kaldir.vc.cit.tum.de/nersemble_benchmark/benchmark/svfr).

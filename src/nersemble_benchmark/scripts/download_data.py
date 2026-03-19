@@ -1,22 +1,19 @@
 from multiprocessing.pool import ThreadPool
-from multiprocessing.pool import ThreadPool
 from pathlib import Path
-from typing import Literal, Union, List, Tuple, Optional, Dict
+from typing import Literal, Union, List, Tuple, Optional
 
 import tyro
-from elias.util import load_json
-from torch._C import BenchmarkConfig
 from tqdm import tqdm
 
 from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCHMARK_NVS_TRAIN_SERIALS, ASSETS, BENCHMARK_MONO_FLAME_AVATAR_IDS, \
     BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TRAIN, BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL, \
-    BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS
-from nersemble_benchmark.env import NERSEMBLE_BENCHMARK_URL_NVS, NERSEMBLE_BENCHMARK_URL
+    BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS, BENCHMARK_SVFR_IMAGE_KEYS
+from nersemble_benchmark.env import NERSEMBLE_BENCHMARK_URL
 from nersemble_benchmark.util.download import download_file
 from nersemble_benchmark.util.metadata import NVSMetadata
 from nersemble_benchmark.util.security import validate_nersemble_benchmark_url
 
-BenchmarkType = Literal["nvs", "mono_flame_avatar"]
+BenchmarkType = Literal["nvs", "mono_flame_avatar", "svfr"]
 AssetType = Literal[
     "calibration", "images", "alpha_maps", "pointclouds",  # NVS
     "flame2023_tracking",  # Mono Flame Avatar
@@ -99,7 +96,20 @@ def main(
 
         relative_urls = collect_relative_urls(benchmark_type, benchmark_ids_sequences_and_timesteps, assets_test)
         download_urls(benchmark_folder, benchmark_type, relative_urls, overwrite=overwrite, n_workers=n_workers)
+    elif benchmark_type == 'svfr':
+        if participant == 'all':
+            participant_ids = BENCHMARK_SVFR_IMAGE_KEYS.keys()
+        else:
+            participant_ids = participant
 
+        benchmark_ids_sequences_and_timesteps = []
+        for p_id in participant_ids:
+            image_keys = BENCHMARK_SVFR_IMAGE_KEYS[p_id]
+            for seq_name, timestep, serial in image_keys:
+                benchmark_ids_sequences_and_timesteps.append((p_id, seq_name, [serial], [timestep]))
+
+        relative_urls = collect_relative_urls(benchmark_type, benchmark_ids_sequences_and_timesteps, assets)
+        download_urls(benchmark_folder, benchmark_type, relative_urls, overwrite=overwrite, n_workers=n_workers)
 
     else:
         raise NotImplementedError(f"Benchmark type {benchmark_type} not implemented")
@@ -122,19 +132,19 @@ def validate_assets(benchmark_type: BenchmarkType, assets: AssetsType):
 
 
 def collect_relative_urls(
-        benchmarkt_type: BenchmarkType,
+        benchmark_type: BenchmarkType,
         sequence_config: List[Tuple[int, str, List[str], Optional[List[int]]]],
         assets: AssetsType,
         pointcloud_frames: Union[Literal['all'], List[int]] = [0]):
-    benchmark_assets = ASSETS[benchmarkt_type]
+    benchmark_assets = ASSETS[benchmark_type]
     relative_urls = []
     for p_id, seq_name, serials, timesteps in sequence_config:
         for asset in assets:
-            if asset in benchmark_assets['per_person']:
+            if 'per_person' in benchmark_assets and asset in benchmark_assets['per_person']:
                 relative_url = benchmark_assets['per_person'][asset]
                 relative_url = relative_url.format(p_id=p_id)
                 relative_urls.append(relative_url)
-            elif asset in benchmark_assets['per_cam']:
+            elif 'per_cam' in benchmark_assets and asset in benchmark_assets['per_cam']:
                 for serial in serials:
                     relative_url = benchmark_assets['per_cam'][asset]
                     relative_url = relative_url.format(p_id=p_id, seq_name=seq_name, serial=serial)
@@ -150,6 +160,12 @@ def collect_relative_urls(
                 relative_url = benchmark_assets['per_sequence'][asset]
                 relative_url = relative_url.format(p_id=p_id, seq_name=seq_name)
                 relative_urls.append(relative_url)
+            elif 'per_image' in benchmark_assets and asset in benchmark_assets['per_image']:
+                for serial in serials:
+                    for timestep in timesteps:
+                        relative_url = benchmark_assets['per_image'][asset]
+                        relative_url = relative_url.format(p_id=p_id, seq_name=seq_name, timestep=timestep, serial=serial)
+                        relative_urls.append(relative_url)
 
     return relative_urls
 
@@ -178,6 +194,8 @@ def download_urls(benchmark_folder: Path,
 
         for future in tqdm(futures):
             future.get()
+
+    print("Finished downloading data")
 
 
 def main_cli():
