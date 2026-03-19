@@ -1,19 +1,18 @@
+import re
 from dataclasses import dataclass
 from itertools import islice
 from pathlib import Path
 from typing import List, Dict, Optional
 
-import cv2
 import numpy as np
 import open3d as o3d
 from dreifus.camera import CameraCoordinateConvention, PoseType
 from dreifus.matrix import Pose, Intrinsics
 from elias.config import Config
 from elias.util import load_json
-from elias.util.io import resize_img
-from tqdm.contrib.concurrent import thread_map
+from elias.util.io import resize_img, load_img
 
-from nersemble_benchmark.constants import ASSETS, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL
+from nersemble_benchmark.constants import ASSETS
 from nersemble_benchmark.util.video import VideoFrameLoader
 
 
@@ -22,6 +21,9 @@ class CameraParams(Config):
     world_2_cam: Dict[str, Pose]
     intrinsics: Dict[str, Intrinsics]
 
+# ==========================================================
+# BaseDataManager for accessing (multi-view) video data
+# ==========================================================
 
 class BaseDataManager:
     def __init__(self, benchmark_folder: str, benchmark_type: str, participant_id: int):
@@ -128,6 +130,9 @@ class BaseDataManager:
         relative_path = ASSETS[self._benchmark_type]['per_cam']['alpha_maps'].format(p_id=self._participant_id, seq_name=sequence_name, serial=serial)
         return f"{self._location}/{relative_path}"
 
+# ==========================================================
+# Novel View Synthesis Task
+# ==========================================================
 
 class NVSDataManager(BaseDataManager):
     def __init__(self, benchmark_folder: str, participant_id: int):
@@ -152,6 +157,9 @@ class NVSDataManager(BaseDataManager):
         relative_path = ASSETS[self._benchmark_type]['per_timestep']['pointclouds'].format(p_id=self._participant_id, seq_name=sequence_name, timestep=timestep)
         return f"{self._location}/{relative_path}"
 
+# ==========================================================
+# Monocular 3D Head Avatar Reconstruction Task
+# ==========================================================
 
 @dataclass
 class FlameTracking:
@@ -167,7 +175,6 @@ class FlameTracking:
     neck: np.ndarray                # (T, 3)
     eyes: np.ndarray                # (T, 6)
     # @formatter:on
-
 
 class MonoFlameAvatarDataManager(BaseDataManager):
     def __init__(self, benchmark_folder: str, participant_id: int):
@@ -185,3 +192,43 @@ class MonoFlameAvatarDataManager(BaseDataManager):
     def get_flame_tracking_path(self, sequence_name: str) -> str:
         relative_path = ASSETS[self._benchmark_type]['per_sequence']['flame2023_tracking'].format(p_id=self._participant_id, seq_name=sequence_name)
         return f"{self._location}/{relative_path}"
+
+#==========================================================
+# Single-view 3D Face Reconstruction Task
+#==========================================================
+
+@dataclass
+class ImageKey:
+    sequence_name: str
+    timestep: int
+    serial: str
+
+    def to_key(self) -> str:
+        return f"{self.sequence_name}_{self.timestep:03d}_{self.serial}"
+
+class SVFRDataManager:
+    def __init__(self, benchmark_folder: str, participant_id: int):
+        self._location = f"{benchmark_folder}/svfr/{participant_id:03d}"
+        self._participant_id = participant_id
+
+    def list_image_keys(self) -> List[ImageKey]:
+        folder_name_pattern = re.compile(r"^([a-zA-Z0-9-_+]+)_(\d+)_(\d+)$")
+        image_keys = []
+        for folder in sorted(Path(self._location).iterdir()):
+            matches = folder_name_pattern.match(folder.name)
+            if matches:
+                seq_name = matches.group(1)
+                timestep = int(matches.group(2))
+                serial = matches.group(3)
+                image_key = ImageKey(sequence_name=seq_name, timestep=timestep, serial=serial)
+                image_keys.append(image_key)
+
+        return image_keys
+
+    def get_asset_folder(self, image_key: ImageKey) -> str:
+        return f"{self._location}/{image_key.sequence_name}_{image_key.timestep}_{image_key.serial}"
+
+    def load_image(self, image_key: ImageKey) -> np.ndarray:
+        image_path = f"{self.get_asset_folder(image_key)}/rgb.png"
+        image = load_img(image_path)
+        return image
