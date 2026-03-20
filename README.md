@@ -10,7 +10,7 @@ For submitting your results, please go to our [submission system](https://kaldir
 | --- |-------------------------------------------------|-------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------|
 | Dynamic Novel View Synthesis (NVS) | [Download NVS data](#22-nvs-benchmark-download) | [Video data loading](#31-shared-data-managers) + [NVS assets](#32-nvs-data-manager-assets) | [Submit to NVS benchmark](#41-nvs-benchmark)                                  | 
  | Monocular FLAME Avatar | [Download Monocular FLAME Avatar data](#23-mono-flame-avatar-benchmark-download) | [Video data loading](#31-shared-data-managers) + [Mono FLAME Avatar assets](#33-mono-flame-avatar-assets)                                  | [Submit to Mono FLAME Avatar benchmark](#42-monocular-flame-avatar-benchmark) |
- | Single-view 3D Face Reconstruction (SVFR) | [Download SVFR data](#24-single-view-3d-face-reconstruction-benchmark-download) | [SVFR data usage](#34-input-images-for-single-view-3d-face-reconstruction)                | [Submit to SVFR benchmark](#43-single-view-3d-face-reconstruction)            |
+ | Single-view 3D Face Reconstruction (SVFR) | [Download SVFR data](#24-single-view-3d-face-reconstruction-benchmark-download) | [SVFR data usage](#34-input-images-for-single-view-3d-face-reconstruction)                | [Submit to SVFR benchmark](#43-single-view-3d-face-reconstruction-benchmark)  |
 
 ## 1. Data Access & Setup
 
@@ -338,7 +338,7 @@ with MonoFlameAvatarSubmissionDataWriter(zip_path) as submission_data_manager:
 Note that the `MonoFlameAvatarSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.  
 After creation, you can submit the `.zip` to the [Monocular FLAME Avatar benchmark](https://kaldir.vc.in.tum.de/nersemble_benchmark/benchmark/mono_flame_avatar).
 
-### 4.3. Single-view 3D Face Reconstruction
+### 4.3. Single-view 3D Face Reconstruction Benchmark
 
 The Single-view 3D Face Reconstruction consists of 2 subtasks:
  * Posed 3D Face Reconstruction: Provide a 3D mesh with the same facial expression as the input image
