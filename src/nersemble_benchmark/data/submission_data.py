@@ -4,6 +4,7 @@ from abc import abstractmethod
 from collections import defaultdict
 from io import BytesIO
 from itertools import islice
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import List, Dict, Optional, Tuple
 
@@ -364,7 +365,7 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
         return self._has_reconstructions('neutral')
 
     def validate_submission(self) -> Dict[str, List]:
-        actual_files = [file.filename for file in self._zipf.filelist]
+        actual_files = [file.filename for file in self._zipf.filelist if not file.is_dir()]
 
         has_posed = False
         has_neutral = False
@@ -377,10 +378,16 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
         missing_neutral_landmarks = []
         wrong_posed_landmarks = []
         wrong_neutral_landmarks = []
+        all_expected_posed_files = []
+        all_expected_neutral_files = []
+        unexpected_files = []
 
         for participant_id, person_keys in BENCHMARK_SVFR_IMAGE_KEYS.items():
             for sequence_name, timestep, serial in person_keys:
                 expected_posed_mesh_path = self._get_mesh_path(participant_id, sequence_name, timestep, serial, 'posed')
+                expected_posed_landmarks_path = self._get_landmarks_path(participant_id, sequence_name, timestep, serial, 'posed')
+                all_expected_posed_files.append(expected_posed_mesh_path)
+                all_expected_posed_files.append(expected_posed_landmarks_path)
                 if expected_posed_mesh_path in actual_files:
                     has_posed = True
 
@@ -389,7 +396,6 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
                         empty_posed_meshes.append(expected_posed_mesh_path)
 
                     if len(mesh.vertices) != 5023:
-                        expected_posed_landmarks_path = self._get_landmarks_path(participant_id, sequence_name, timestep, serial, 'posed')
                         if expected_posed_landmarks_path in actual_files:
                             landmarks = self.load_posed_landmarks(participant_id, sequence_name, timestep, serial)
                             if landmarks.shape != (7, 3):
@@ -400,6 +406,9 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
                     missing_posed_meshes.append(expected_posed_mesh_path)
 
                 expected_neutral_mesh_path = self._get_mesh_path(participant_id, sequence_name, timestep, serial, 'neutral')
+                expected_neutral_landmarks_path = self._get_landmarks_path(participant_id, sequence_name, timestep, serial, 'neutral')
+                all_expected_neutral_files.append(expected_neutral_mesh_path)
+                all_expected_neutral_files.append(expected_neutral_landmarks_path)
                 if expected_neutral_mesh_path in actual_files:
                     has_neutral = True
 
@@ -408,7 +417,6 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
                         empty_neutral_meshes.append(expected_neutral_mesh_path)
 
                     if len(mesh.vertices) != 5023:
-                        expected_neutral_landmarks_path = self._get_landmarks_path(participant_id, sequence_name, timestep, serial, 'neutral')
                         if expected_neutral_landmarks_path in actual_files:
                             landmarks = self.load_neutral_landmarks(participant_id, sequence_name, timestep, serial)
                             if landmarks.shape != (7, 3):
@@ -417,6 +425,12 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
                             missing_neutral_landmarks.append(expected_neutral_landmarks_path)
                 else:
                     missing_neutral_meshes.append(expected_neutral_mesh_path)
+
+        for actual_file in actual_files:
+            if not has_neutral and actual_file not in all_expected_posed_files:
+                unexpected_files.append(actual_file)
+            if not has_posed and actual_file not in all_expected_neutral_files:
+                unexpected_files.append(actual_file)
 
         submission_issues = dict()
         if has_posed:
@@ -444,6 +458,9 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
 
             if wrong_neutral_landmarks:
                 submission_issues['wrong_neutral_landmarks'] = wrong_neutral_landmarks
+
+        if unexpected_files:
+            submission_issues['unexpected_files'] = unexpected_files
 
         if not has_posed and not has_neutral:
             submission_issues['missing_svfr_tasks'] = ['posed', 'neutral']
