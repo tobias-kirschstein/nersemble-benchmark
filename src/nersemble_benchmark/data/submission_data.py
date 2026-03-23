@@ -393,7 +393,7 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
                         if expected_posed_landmarks_path in actual_files:
                             landmarks = self.load_posed_landmarks(participant_id, sequence_name, timestep, serial)
                             if landmarks.shape != (7, 3):
-                                wrong_posed_landmarks.append(expected_posed_landmarks_path)
+                                wrong_posed_landmarks.append((expected_posed_landmarks_path, landmarks.shape))
                         else:
                             missing_posed_landmarks.append(expected_posed_landmarks_path)
                 else:
@@ -412,7 +412,7 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
                         if expected_neutral_landmarks_path in actual_files:
                             landmarks = self.load_neutral_landmarks(participant_id, sequence_name, timestep, serial)
                             if landmarks.shape != (7, 3):
-                                wrong_neutral_landmarks.append(expected_neutral_landmarks_path)
+                                wrong_neutral_landmarks.append((expected_neutral_landmarks_path, landmarks.shape))
                         else:
                             missing_neutral_landmarks.append(expected_neutral_landmarks_path)
                 else:
@@ -444,6 +444,9 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
 
             if wrong_neutral_landmarks:
                 submission_issues['wrong_neutral_landmarks'] = wrong_neutral_landmarks
+
+        if not has_posed and not has_neutral:
+            submission_issues['missing_svfr_tasks'] = ['posed', 'neutral']
 
         return submission_issues
 
