@@ -427,9 +427,14 @@ class SVFRSubmissionDataReader(SubmissionDataReader):
                     missing_neutral_meshes.append(expected_neutral_mesh_path)
 
         for actual_file in actual_files:
+            # Only posed
             if not has_neutral and actual_file not in all_expected_posed_files:
                 unexpected_files.append(actual_file)
+            # Only neutral
             if not has_posed and actual_file not in all_expected_neutral_files:
+                unexpected_files.append(actual_file)
+            # Dual submission
+            if has_neutral and has_posed and actual_file not in all_expected_neutral_files and actual_file not in all_expected_posed_files:
                 unexpected_files.append(actual_file)
 
         submission_issues = dict()
