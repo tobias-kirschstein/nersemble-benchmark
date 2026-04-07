@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from nersemble_benchmark.constants import BENCHMARK_NVS_IDS_AND_SEQUENCES, BENCHMARK_NVS_TRAIN_SERIALS, ASSETS, BENCHMARK_MONO_FLAME_AVATAR_IDS, \
     BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TRAIN, BENCHMARK_MONO_FLAME_AVATAR_SEQUENCES_TEST, BENCHMARK_MONO_FLAME_AVATAR_TRAIN_SERIAL, \
-    BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS, BENCHMARK_SVFR_IMAGE_KEYS
+    BENCHMARK_MONO_FLAME_AVATAR_HOLD_OUT_SERIALS, BENCHMARK_SVFR_IMAGE_KEYS, OPTIONAL_ASSETS
 from nersemble_benchmark.env import NERSEMBLE_BENCHMARK_URL
 from nersemble_benchmark.util.download import download_file
 from nersemble_benchmark.util.metadata import NVSMetadata
@@ -16,7 +16,7 @@ from nersemble_benchmark.util.security import validate_nersemble_benchmark_url
 BenchmarkType = Literal["nvs", "mono_flame_avatar", "svfr"]
 AssetType = Literal[
     "calibration", "images", "alpha_maps", "pointclouds",  # NVS
-    "flame2023_tracking",  # Mono Flame Avatar
+    "flame2023_tracking", "flame2023_tracking_v2",  # Mono Flame Avatar
 ]
 AssetsType = Union[Literal['all'], List[AssetType]]
 
@@ -27,7 +27,10 @@ def main(
         /,
         assets: AssetsType = 'all',
         participant: Union[Literal['all'], List[int]] = 'all',
+
+        # NVS benchmark
         pointcloud_frames: Union[Literal['all'], List[int]] = [0],
+
         n_workers: int = 1,
         overwrite: bool = False):
     """
@@ -74,7 +77,7 @@ def main(
         benchmark_ids_sequences_and_timesteps = [(p_id, seq_name, serials, nvs_metadata.sequences[p_id].timesteps)
                                                  for p_id, seq_name, serials in benchmark_ids_sequences_and_timesteps]
 
-        relative_urls = collect_relative_urls(benchmark_type, benchmark_ids_sequences_and_timesteps, assets, pointcloud_frames)
+        relative_urls = collect_relative_urls(benchmark_type, benchmark_ids_sequences_and_timesteps, assets, pointcloud_frames=pointcloud_frames)
         download_urls(benchmark_folder, benchmark_type, relative_urls, overwrite=overwrite, n_workers=n_workers)
     elif benchmark_type == 'mono_flame_avatar':
         if participant == 'all':
@@ -123,7 +126,8 @@ def validate_assets(benchmark_type: BenchmarkType, assets: AssetsType):
             available_asset_keys.extend(asset_set.keys())
     # available_asset_keys = [asset_name for asset_set in benchmark_assets.values() if asset_set != 'test_assets' for asset_name in asset_set.keys()]
     if assets == 'all':
-        assets = available_asset_keys
+        # Download all assets except for optional ones
+        assets = [asset for asset in available_asset_keys if asset not in OPTIONAL_ASSETS]
     else:
         unexpected_assets = [asset_name for asset_name in assets if asset_name not in available_asset_keys]
         assert len(unexpected_assets) == 0, f"Unexpected assets specified for {benchmark_type} benchmark: {unexpected_assets}"

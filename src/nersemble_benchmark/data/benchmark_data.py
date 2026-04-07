@@ -12,7 +12,7 @@ from elias.config import Config
 from elias.util import load_json
 from elias.util.io import resize_img, load_img
 
-from nersemble_benchmark.constants import ASSETS
+from nersemble_benchmark.constants import ASSETS, FLAME_TRACKING_CURRENT_VERSION, FLAME_TRACKING_VERSION_MAPPING
 from nersemble_benchmark.util.video import VideoFrameLoader
 
 
@@ -180,8 +180,8 @@ class MonoFlameAvatarDataManager(BaseDataManager):
     def __init__(self, benchmark_folder: str, participant_id: int):
         super().__init__(benchmark_folder, "mono_flame_avatar", participant_id)
 
-    def load_flame_tracking(self, sequence_name: str) -> FlameTracking:
-        flame_tracking = np.load(self.get_flame_tracking_path(sequence_name))
+    def load_flame_tracking(self, sequence_name: str, version: int = FLAME_TRACKING_CURRENT_VERSION) -> FlameTracking:
+        flame_tracking = np.load(self.get_flame_tracking_path(sequence_name, version=version))
         flame_tracking = FlameTracking(**flame_tracking)
         return flame_tracking
 
@@ -189,8 +189,9 @@ class MonoFlameAvatarDataManager(BaseDataManager):
     # Paths
     # ----------------------------------------------------------
 
-    def get_flame_tracking_path(self, sequence_name: str) -> str:
-        relative_path = ASSETS[self._benchmark_type]['per_sequence']['flame2023_tracking'].format(p_id=self._participant_id, seq_name=sequence_name)
+    def get_flame_tracking_path(self, sequence_name: str, version: int = FLAME_TRACKING_CURRENT_VERSION) -> str:
+        flame_tracking_key = FLAME_TRACKING_VERSION_MAPPING[version]
+        relative_path = ASSETS[self._benchmark_type]['per_sequence'][flame_tracking_key].format(p_id=self._participant_id, seq_name=sequence_name)
         return f"{self._location}/{relative_path}"
 
 #==========================================================

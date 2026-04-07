@@ -1,6 +1,6 @@
-# NeRSemble Photorealistic 3D Head Avatar Benchmark
+# NeRSemble 3D Head Avatar Benchmark
 
-This is the official NeRSemble Benchmark Toolkit for downloading the data and preparing submissions for the NeRSemble Photorealistic 3D Head Avatar benchmarks.  
+This is the official NeRSemble Benchmark Toolkit for downloading the data and preparing submissions for the NeRSemble 3D Head Avatar benchmarks.  
 For submitting your results, please go to our [submission system](https://kaldir.vc.in.tum.de/nersemble_benchmark/).
 
 ![](static/videos/NeRSemble_Benchmark_Teaser.gif)
@@ -88,7 +88,8 @@ nersemble-benchmark-download ${benchmark_folder} mono_flame_avatar
 #### FLAME tracking
 
 The Mono FLAME Avatar benchmark comes with FLAME tracking for each timesteps of both the train sequences as well as the hold-out sequences.  
-These are downloaded per default, but can also be specifically targeted for download via `--assets flame2023_tracking`.
+These are downloaded per default, but can also be specifically targeted for download via `--assets flame2023_tracking_v2`.  
+**Update Benchmark v2 (2026):** The FLAME tracking for the Mono FLAME Avatar task has been improved. Only `flame2023_tracking_v2` (downloaded per default now) should be used when preparing submissions. The leaderboard has been updated accordingly.
 
 ### 2.4. Single-view 3D Face Reconstruction Benchmark download
 
@@ -336,7 +337,8 @@ with MonoFlameAvatarSubmissionDataWriter(zip_path) as submission_data_manager:
     submission_data_manager.add_video(participant, sequence_name, serial, images)  #  <- will automatically package the images into a .mp4 file and place it correctly into the .zip
 ```
 Note that the `MonoFlameAvatarSubmissionDataWriter` will overwrite any previously existing `.zip` file with the same path. So, the predictions for all sequences and all hold out cameras have to be added at once.  
-After creation, you can submit the `.zip` to the [Monocular FLAME Avatar benchmark](https://kaldir.vc.in.tum.de/nersemble_benchmark/benchmark/mono_flame_avatar).
+After creation, you can submit the `.zip` to the [Monocular FLAME Avatar benchmark](https://kaldir.vc.in.tum.de/nersemble_benchmark/benchmark/mono_flame_avatar).  
+Note that the benchmark v2 (2026) only allows submissions to v2 of the Monocular FLAME Avatar task where the newer `flame2023_tracking_v2` is being used.
 
 ### 4.3. Single-view 3D Face Reconstruction Benchmark
 

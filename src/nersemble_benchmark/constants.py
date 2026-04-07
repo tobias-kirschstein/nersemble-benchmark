@@ -23,7 +23,8 @@ ASSETS = {
                 },
             "per_sequence":
                 {
-                    "flame2023_tracking": "{p_id:03d}/sequences/{seq_name:}/tracking/flame2023_tracking.npz"
+                    "flame2023_tracking": "{p_id:03d}/sequences/{seq_name:}/tracking/flame2023_tracking.npz",
+                    "flame2023_tracking_v2": "{p_id:03d}/sequences/{seq_name:}/tracking/flame2023_tracking_v2.npz"
                 },
             "per_cam":
                 {
@@ -32,7 +33,7 @@ ASSETS = {
                 },
             "test_assets":
                 [
-                    "flame2023_tracking"
+                    "flame2023_tracking_v2"
                 ]
         },
     "svfr": {
@@ -42,6 +43,10 @@ ASSETS = {
             }
     }
 }
+
+OPTIONAL_ASSETS = ["flame2023_tracking"]
+FLAME_TRACKING_CURRENT_VERSION = 2
+FLAME_TRACKING_VERSION_MAPPING = {1: "flame2023_tracking", 2: "flame2023_tracking_v2"}
 
 SERIALS = ["222200042", "222200044", "222200046", "222200040", "222200036", "222200048", "220700191", "222200041",
            "222200037", "222200038", "222200047", "222200043", "222200049", "222200039", "222200045", "221501007"]
